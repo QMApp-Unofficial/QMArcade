@@ -229,14 +229,12 @@ function CircularPicker({
           ) : (
             <div className="relative h-24 w-24 grid place-items-center">
               <div className="absolute inset-0 rounded-full bg-accent/15 blur-2xl animate-orbit-glow" />
-              <div className="relative h-16 w-16 rounded-full bg-primary text-primary-foreground grid place-items-center shadow-lg shadow-primary/20">
-                <img
-                  src="/qmul-logo.svg"
-                  alt=""
-                  aria-hidden="true"
-                  className="h-12 w-12 rounded-full"
-                />
-              </div>
+              <img
+                src="/qmul-logo.png"
+                alt=""
+                aria-hidden="true"
+                className="relative h-20 w-20 rounded-full shadow-lg shadow-primary/25"
+              />
             </div>
           )}
         </motion.div>

@@ -49,7 +49,7 @@ export function Layout() {
             aria-label="Home"
           >
             <img
-              src="/qmul-logo.svg"
+              src="/qmul-logo.png"
               alt="QMUL Arcade"
               className="h-9 w-9 rounded-full shrink-0"
             />
