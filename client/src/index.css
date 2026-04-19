@@ -1,0 +1,371 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Collegiate-arcade palette — QMUL navy anchor + warm heraldic amber */
+    --background: 220 30% 96%;
+    --foreground: 220 40% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 40% 12%;
+    --primary: 220 78% 22%;
+    --primary-foreground: 44 95% 96%;
+    --secondary: 220 20% 92%;
+    --secondary-foreground: 220 40% 12%;
+    --muted: 220 20% 94%;
+    --muted-foreground: 220 14% 40%;
+    --accent: 36 92% 50%;
+    --accent-foreground: 220 50% 10%;
+    --destructive: 8 78% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 18% 86%;
+    --input: 220 18% 86%;
+    --ring: 36 92% 50%;
+
+    --surface-1: 0 0% 100%;
+    --surface-2: 220 20% 94%;
+    --ink: 220 40% 12%;
+    --chip: 220 24% 82%;
+
+    --wordle-correct: 148 62% 36%;
+    --wordle-present: 36 92% 50%;
+    --wordle-absent: 220 10% 55%;
+
+    --glow-primary: 220 78% 28%;
+    --glow-accent: 36 92% 55%;
+
+    /* Custom easing curves — stronger than CSS defaults */
+    --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+    color-scheme: light;
+  }
+
+  .dark {
+    --background: 220 35% 7%;
+    --foreground: 44 30% 96%;
+    --card: 220 30% 11%;
+    --card-foreground: 44 30% 96%;
+    --primary: 36 92% 58%;
+    --primary-foreground: 220 50% 8%;
+    --secondary: 220 22% 15%;
+    --secondary-foreground: 44 30% 96%;
+    --muted: 220 22% 14%;
+    --muted-foreground: 220 14% 64%;
+    --accent: 36 92% 58%;
+    --accent-foreground: 220 50% 8%;
+    --destructive: 8 74% 56%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 18% 20%;
+    --input: 220 18% 20%;
+    --ring: 36 92% 58%;
+
+    --surface-1: 220 30% 11%;
+    --surface-2: 220 28% 14%;
+    --ink: 44 30% 96%;
+    --chip: 220 20% 30%;
+
+    --wordle-correct: 148 58% 42%;
+    --wordle-present: 36 92% 55%;
+    --wordle-absent: 220 10% 30%;
+
+    --glow-primary: 36 92% 58%;
+    --glow-accent: 220 60% 45%;
+
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "ss02", "cv11";
+    background-image:
+      radial-gradient(1200px 600px at 8% -10%, hsl(var(--glow-primary) / 0.12), transparent 55%),
+      radial-gradient(900px 500px at 108% 8%, hsl(var(--glow-accent) / 0.1), transparent 55%),
+      radial-gradient(circle at 0 0, hsl(var(--border) / 0.35) 1px, transparent 1px);
+    background-size: auto, auto, 28px 28px;
+    background-attachment: fixed;
+    transition: background-color 0.3s var(--ease-out-quint);
+  }
+
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--chip) / 0.4);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--chip) / 0.6);
+    background-clip: padding-box;
+    border: 2px solid transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Elevated surface used for modals and premium content only — not everywhere */
+  .surface {
+    background: hsl(var(--surface-1));
+    border: 1px solid hsl(var(--border));
+    box-shadow:
+      0 1px 2px hsl(220 40% 4% / 0.04),
+      0 8px 24px -12px hsl(220 40% 4% / 0.12);
+  }
+
+  .dark .surface {
+    background: hsl(var(--surface-1));
+    box-shadow:
+      0 1px 0 hsl(44 30% 96% / 0.04) inset,
+      0 12px 40px -16px hsl(0 0% 0% / 0.6);
+  }
+
+  .surface-glass,
+  .glass {
+    background: hsl(var(--surface-1) / 0.72);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid hsl(var(--border) / 0.7);
+  }
+
+  /* Button system — specific transitions, scale(0.97) on press */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium
+           focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none
+           disabled:opacity-50 disabled:pointer-events-none select-none;
+    transition: background-color 180ms var(--ease-out-quint),
+                color 180ms var(--ease-out-quint),
+                border-color 180ms var(--ease-out-quint),
+                transform 140ms var(--ease-out-quint),
+                box-shadow 180ms var(--ease-out-quint),
+                filter 180ms var(--ease-out-quint);
+  }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary {
+    @apply btn;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    box-shadow:
+      inset 0 1px 0 hsl(44 95% 96% / 0.15),
+      0 2px 0 hsl(var(--primary) / 0.6),
+      0 8px 22px -10px hsl(var(--primary) / 0.55);
+  }
+  .btn-primary:hover { filter: brightness(1.08); }
+
+  .btn-secondary {
+    @apply btn;
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    border: 1px solid hsl(var(--border));
+  }
+  .btn-secondary:hover { background: hsl(var(--muted)); }
+
+  .btn-ghost {
+    @apply btn bg-transparent;
+    color: hsl(var(--foreground));
+  }
+  .btn-ghost:hover { background: hsl(var(--foreground) / 0.06); }
+
+  .btn-destructive {
+    @apply btn text-destructive-foreground;
+    background: hsl(var(--destructive));
+  }
+  .btn-destructive:hover { filter: brightness(1.08); }
+
+  .btn-accent {
+    @apply btn;
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.35),
+      0 2px 0 hsl(var(--accent) / 0.5),
+      0 8px 22px -10px hsl(var(--accent) / 0.5);
+  }
+  .btn-accent:hover { filter: brightness(1.06); }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium uppercase tracking-wider;
+    background: hsl(var(--foreground) / 0.05);
+    border: 1px solid hsl(var(--border));
+    color: hsl(var(--muted-foreground));
+    font-variation-settings: "wdth" 95;
+  }
+
+  .card-elev {
+    @apply surface rounded-2xl p-5;
+  }
+
+  .rule {
+    height: 1px;
+    background: linear-gradient(to right, transparent, hsl(var(--border)), transparent);
+  }
+
+  /* Rarity — full borders (no left-stripe) with color-matched wash */
+  .rarity-common {
+    box-shadow: 0 0 0 1px hsl(220 10% 55% / 0.55);
+  }
+  .rarity-rare {
+    box-shadow: 0 0 0 1px hsl(210 88% 58% / 0.6), 0 0 28px -6px hsl(210 88% 58% / 0.55);
+  }
+  .rarity-epic {
+    box-shadow: 0 0 0 1px hsl(272 75% 65% / 0.65), 0 0 32px -6px hsl(272 75% 65% / 0.55);
+  }
+  .rarity-legendary {
+    box-shadow: 0 0 0 2px hsl(36 92% 55% / 0.75), 0 0 42px -4px hsl(36 92% 55% / 0.7);
+    animation: legendary-pulse 2.6s var(--ease-in-out-quart) infinite;
+  }
+}
+
+@keyframes legendary-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px hsl(36 92% 55% / 0.7), 0 0 40px -6px hsl(36 92% 55% / 0.55); }
+  50% { box-shadow: 0 0 0 2px hsl(36 92% 60% / 0.95), 0 0 60px 0 hsl(36 92% 60% / 0.9); }
+}
+
+/* Wordle board — fills available vertical space, tiles scale to fit */
+.wordle-board {
+  --tile-gap: 0.35rem;
+  --tile-size: max(
+    1.5rem,
+    min(
+      calc((100vw - 2rem) / 5 - var(--tile-gap)),
+      calc((100dvh - 24rem) / 6 - var(--tile-gap)),
+      3.5rem
+    )
+  );
+  width: calc(var(--tile-size) * 5 + var(--tile-gap) * 4);
+}
+
+.tile {
+  @apply relative flex items-center justify-center rounded-md font-bold uppercase;
+  width: var(--tile-size);
+  height: var(--tile-size);
+  font-size: calc(var(--tile-size) * 0.44);
+  letter-spacing: 0.02em;
+  border: 2px solid hsl(var(--border));
+  transition: transform 200ms var(--ease-out-quint),
+              background-color 160ms var(--ease-out-quint),
+              border-color 160ms var(--ease-out-quint);
+  font-feature-settings: "tnum", "lnum";
+}
+.tile.empty { background: hsl(var(--foreground) / 0.02); }
+.tile.filled {
+  background: hsl(var(--foreground) / 0.04);
+  border-color: hsl(var(--foreground) / 0.22);
+  animation: pop 220ms var(--ease-out-quint);
+}
+.tile.correct {
+  background: hsl(var(--wordle-correct));
+  border-color: hsl(var(--wordle-correct));
+  color: hsl(44 95% 96%);
+}
+.tile.present {
+  background: hsl(var(--wordle-present));
+  border-color: hsl(var(--wordle-present));
+  color: hsl(220 50% 10%);
+}
+.tile.absent {
+  background: hsl(var(--wordle-absent));
+  border-color: hsl(var(--wordle-absent));
+  color: hsl(44 30% 96%);
+}
+
+/* Keyboard keys — fixed size, locked to bottom, clear press feedback */
+.key {
+  @apply inline-flex items-center justify-center rounded-md font-semibold uppercase cursor-pointer select-none;
+  background: hsl(var(--foreground) / 0.06);
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  height: 3rem;
+  min-width: 2.2rem;
+  padding: 0 0.45rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  transition: background-color 140ms var(--ease-out-quint),
+              transform 120ms var(--ease-out-quint),
+              color 140ms var(--ease-out-quint);
+}
+.key:hover { background: hsl(var(--foreground) / 0.1); }
+.key:active { transform: scale(0.95); }
+.key.correct { background: hsl(var(--wordle-correct)); color: hsl(44 95% 96%); border-color: transparent; }
+.key.present { background: hsl(var(--wordle-present)); color: hsl(220 50% 10%); border-color: transparent; }
+.key.absent { background: hsl(var(--wordle-absent)); color: hsl(var(--foreground) / 0.65); border-color: transparent; }
+.key.wide { min-width: 3.5rem; font-size: 0.7rem; }
+
+/* Title-block motion — solid text, no gradient fills */
+@keyframes float-up {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes rotate-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes rotate-slow-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+@keyframes orbit-glow {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(1.04); }
+}
+
+.animate-float { animation: float-up 5s var(--ease-in-out-quart) infinite; }
+.animate-fade-in-up { animation: fade-in-up 600ms var(--ease-out-quint) both; }
+.animate-rotate-slow { animation: rotate-slow 48s linear infinite; }
+.animate-rotate-slow-reverse { animation: rotate-slow-reverse 48s linear infinite; }
+.animate-orbit-glow { animation: orbit-glow 3.4s var(--ease-in-out-quart) infinite; }
+
+.shake { animation: shake 0.4s var(--ease-out-quint); }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+@keyframes pop {
+  0% { transform: scale(0.92); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Stagger utility — decorative, non-blocking */
+.stagger > * { opacity: 0; animation: fade-in-up 520ms var(--ease-out-quint) both; }
+.stagger > *:nth-child(1) { animation-delay: 40ms; }
+.stagger > *:nth-child(2) { animation-delay: 90ms; }
+.stagger > *:nth-child(3) { animation-delay: 140ms; }
+.stagger > *:nth-child(4) { animation-delay: 190ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+.stagger > *:nth-child(6) { animation-delay: 290ms; }
+.stagger > *:nth-child(7) { animation-delay: 340ms; }
+.stagger > *:nth-child(8) { animation-delay: 390ms; }
