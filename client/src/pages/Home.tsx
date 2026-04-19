@@ -59,7 +59,8 @@ const TILES: Tile[] = [
   },
 ];
 
-const RADIUS = "min(34vw, 205px)";
+const PICKER_SIZE = "min(88vw, max(280px, 100dvh - 380px), 520px)";
+const RADIUS = `calc(${PICKER_SIZE} * 0.395)`;
 
 export function Home() {
   const { user } = useAuth();
@@ -67,7 +68,7 @@ export function Home() {
   const active = hovered !== null ? TILES[hovered] : null;
 
   return (
-    <div className="relative flex flex-col items-center gap-6 md:gap-10 pt-2 pb-8 md:pb-12">
+    <div className="relative flex-1 min-h-0 flex flex-col items-center justify-center gap-3 md:gap-5 py-2">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 overflow-hidden"
@@ -85,29 +86,21 @@ export function Home() {
         transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
         className="relative flex flex-col items-center text-center px-4"
       >
-        <p className="chip mb-5">
+        <p className="chip mb-3">
           <Sparkles className="h-3 w-3" aria-hidden="true" />
           <span>{user ? `Welcome back, ${user.username}` : "Queen Mary · arcade"}</span>
         </p>
         <h1
-          className="font-display text-[clamp(2.8rem,9vw,5.25rem)] font-extrabold leading-[0.92] tracking-[-0.035em] text-foreground"
+          className="font-display text-[clamp(2.2rem,7vw,4.25rem)] font-extrabold leading-[0.92] tracking-[-0.035em] text-foreground"
           style={{ fontVariationSettings: '"wdth" 82, "opsz" 96' }}
         >
           {APP.NAME}
         </h1>
-        <div className="mt-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-          <span className="h-px w-8 bg-border" />
+        <div className="mt-2 flex items-center gap-3 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+          <span className="h-px w-6 bg-border" />
           <span>est. 2026</span>
-          <span className="h-px w-8 bg-border" />
+          <span className="h-px w-6 bg-border" />
         </div>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.25, duration: 0.5 }}
-          className="mt-4 text-sm md:text-base text-muted-foreground max-w-md"
-        >
-          Play, collect, and scribble with your server. Everything saves.
-        </motion.p>
       </motion.section>
 
       <motion.section
@@ -123,8 +116,8 @@ export function Home() {
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.9, duration: 0.6 }}
-        className="text-xs text-muted-foreground text-center px-4"
+        transition={{ delay: 0.6, duration: 0.4 }}
+        className="text-[11px] text-muted-foreground text-center px-4 shrink-0"
       >
         {active ? "Click to launch →" : "Hover a tile — they orbit while you decide."}
       </motion.p>
@@ -148,8 +141,8 @@ function CircularPicker({
     <div
       className="relative mx-auto"
       style={{
-        width: "min(88vw, 520px)",
-        height: "min(88vw, 520px)",
+        width: PICKER_SIZE,
+        height: PICKER_SIZE,
       }}
     >
       <div

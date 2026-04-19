@@ -39,7 +39,7 @@ export function Layout() {
   const [adminOpen, setAdminOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-dvh flex flex-col overflow-hidden">
       <header className="sticky top-0 z-30 surface-glass border-b border-border">
         <div className="container flex items-center gap-3 py-2.5">
           <NavLink
@@ -209,7 +209,7 @@ export function Layout() {
         </nav>
       </header>
 
-      <main className="container py-3 md:py-4 flex-1 w-full flex flex-col min-h-0">
+      <main className="container py-3 md:py-4 flex-1 w-full flex flex-col min-h-0 overflow-y-auto">
         <Outlet />
       </main>
 

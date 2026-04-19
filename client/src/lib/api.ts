@@ -56,6 +56,12 @@ export function authHeaders(): Record<string, string> {
   return headers;
 }
 
+async function parseBody(res: Response): Promise<unknown> {
+  const text = await res.text();
+  if (!text) return null;
+  try { return JSON.parse(text); } catch { return text; }
+}
+
 async function req<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(BASE + path, {
     credentials: "include",
@@ -67,12 +73,15 @@ async function req<T>(path: string, init: RequestInit = {}): Promise<T> {
     ...init,
   });
   if (!res.ok) {
-    let body: any;
-    try { body = await res.json(); } catch { body = await res.text(); }
-    throw new ApiError(res.status, body?.error || res.statusText, body);
+    const body = await parseBody(res);
+    const msg =
+      (body && typeof body === "object" && "error" in body && typeof (body as any).error === "string")
+        ? (body as any).error
+        : res.statusText;
+    throw new ApiError(res.status, msg, body);
   }
   if (res.status === 204) return undefined as T;
-  return res.json() as Promise<T>;
+  return (await parseBody(res)) as T;
 }
 
 export class ApiError extends Error {
@@ -95,11 +104,14 @@ export const api = {
       body: fd,
     });
     if (!res.ok) {
-      let body: any;
-      try { body = await res.json(); } catch { body = await res.text(); }
-      throw new ApiError(res.status, body?.error || res.statusText, body);
+      const body = await parseBody(res);
+      const msg =
+        (body && typeof body === "object" && "error" in body && typeof (body as any).error === "string")
+          ? (body as any).error
+          : res.statusText;
+      throw new ApiError(res.status, msg, body);
     }
-    return res.json();
+    return (await parseBody(res)) as T;
   },
   downloadFile: async (p: string, filename: string) => {
     const res = await fetch(BASE + p, {
