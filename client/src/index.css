@@ -250,6 +250,23 @@
   }
   .sidebar-link:active { transform: scale(0.98); }
 
+  .activity-fullscreen:fullscreen {
+    width: 100vw;
+    height: 100vh;
+    padding: 1rem;
+    overflow: hidden;
+    background: hsl(var(--background));
+  }
+
+  .activity-fullscreen:fullscreen > .card-elev,
+  .activity-fullscreen:fullscreen > .activity-fullscreen-grid {
+    height: 100%;
+  }
+
+  .activity-fullscreen-scroll:fullscreen {
+    overflow: auto;
+  }
+
   /* Rarity — full borders with color-matched wash */
   .rarity-common {
     box-shadow: 0 0 0 1px hsl(220 10% 55% / 0.55);

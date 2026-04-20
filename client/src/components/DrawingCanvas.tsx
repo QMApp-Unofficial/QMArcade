@@ -42,6 +42,7 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, Props>(
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [drawing, setDrawing] = useState(false);
     const strokeRef = useRef<StrokeShape | null>(null);
+    const strokesRef = useRef<StrokeShape[]>([]);
 
     function getCtx() {
       const c = canvasRef.current;
@@ -49,7 +50,7 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, Props>(
       return c.getContext("2d");
     }
 
-    function drawStroke(s: StrokeShape) {
+    function renderStroke(s: StrokeShape) {
       const c = canvasRef.current;
       const ctx = getCtx();
       if (!c || !ctx) return;
@@ -71,17 +72,31 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, Props>(
       ctx.globalCompositeOperation = "source-over";
     }
 
+    function renderAll() {
+      const c = canvasRef.current;
+      const ctx = getCtx();
+      if (!c || !ctx) return;
+      ctx.clearRect(0, 0, c.width, c.height);
+      strokesRef.current.forEach(renderStroke);
+    }
+
+    function drawStroke(s: StrokeShape) {
+      strokesRef.current.push(s);
+      renderStroke(s);
+    }
+
     function clear() {
       const c = canvasRef.current;
       const ctx = getCtx();
+      strokesRef.current = [];
       if (c && ctx) ctx.clearRect(0, 0, c.width, c.height);
     }
 
     useImperativeHandle(ref, () => ({
       drawStroke,
       drawAll: (ss) => {
-        clear();
-        ss.forEach(drawStroke);
+        strokesRef.current = [...ss];
+        renderAll();
       },
       clear,
     }));
@@ -93,12 +108,21 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, Props>(
       const resize = () => {
         const rect = c.getBoundingClientRect();
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        c.width = Math.round(rect.width * dpr);
-        c.height = Math.round(rect.height * dpr);
+        const nextWidth = Math.max(1, Math.round(rect.width * dpr));
+        const nextHeight = Math.max(1, Math.round(rect.height * dpr));
+        if (c.width === nextWidth && c.height === nextHeight) return;
+        c.width = nextWidth;
+        c.height = nextHeight;
+        renderAll();
       };
+      const observer = new ResizeObserver(resize);
+      observer.observe(c);
       resize();
       window.addEventListener("resize", resize);
-      return () => window.removeEventListener("resize", resize);
+      return () => {
+        observer.disconnect();
+        window.removeEventListener("resize", resize);
+      };
     }, []);
 
     function toNormalized(e: React.PointerEvent) {
@@ -122,14 +146,14 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, Props>(
         erase: erasing,
         points: [p],
       };
-      drawStroke(strokeRef.current);
+      renderStroke(strokeRef.current);
     }
 
     function onMove(e: React.PointerEvent) {
       if (!drawing || !strokeRef.current) return;
       const p = toNormalized(e);
       strokeRef.current.points.push(p);
-      drawStroke(strokeRef.current);
+      renderStroke(strokeRef.current);
     }
 
     function onUp() {
@@ -137,14 +161,17 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, Props>(
       setDrawing(false);
       const s = strokeRef.current;
       strokeRef.current = null;
-      if (s && onStrokeComplete) onStrokeComplete(s);
+      if (s) {
+        strokesRef.current.push(s);
+        if (onStrokeComplete) onStrokeComplete(s);
+      }
     }
 
     return (
       <canvas
         ref={canvasRef}
         className={cn(
-          "rounded-xl bg-white touch-none select-none aspect-[4/3] w-full",
+          "block rounded-xl bg-white touch-none select-none aspect-[4/3] w-full",
           readOnly && "cursor-not-allowed",
           className,
         )}

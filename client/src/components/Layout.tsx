@@ -15,6 +15,8 @@ import {
   Lock,
   X,
   PenLine,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -47,13 +49,16 @@ export function Layout() {
   const { user, logout } = useAuth();
   const { theme, toggle } = useTheme();
   const [adminOpen, setAdminOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <div className="h-dvh flex overflow-hidden">
       <DesktopSidebar
         user={user}
         theme={theme}
+        collapsed={sidebarCollapsed}
         onToggleTheme={toggle}
+        onToggleCollapsed={() => setSidebarCollapsed((value) => !value)}
         onOpenAdmin={() => setAdminOpen(true)}
         onLogout={logout}
       />
@@ -131,21 +136,29 @@ function SidebarNavLink({
   label,
   icon: Icon,
   end,
+  collapsed,
 }: {
   to: string;
   label: string;
   icon: typeof Gamepad2;
   end?: boolean;
+  collapsed?: boolean;
 }) {
   return (
-    <NavLink to={to} end={end} className="relative block">
+    <NavLink
+      to={to}
+      end={end}
+      className="relative block"
+      aria-label={collapsed ? label : undefined}
+      title={collapsed ? label : undefined}
+    >
       {({ isActive }) => (
         <span
           data-active={isActive || undefined}
-          className="sidebar-link"
+          className={cn("sidebar-link", collapsed && "justify-center px-2")}
         >
           <Icon className="h-4 w-4 shrink-0" aria-hidden="true" strokeWidth={2.2} />
-          <span className="flex-1">{label}</span>
+          <span className={cn("flex-1", collapsed && "sr-only")}>{label}</span>
           {isActive && (
             <motion.span
               layoutId="sidebar-active"
@@ -162,37 +175,89 @@ function SidebarNavLink({
 function DesktopSidebar({
   user,
   theme,
+  collapsed,
   onToggleTheme,
+  onToggleCollapsed,
   onOpenAdmin,
   onLogout,
 }: {
   user: AuthUser;
   theme: string;
+  collapsed: boolean;
   onToggleTheme: () => void;
+  onToggleCollapsed: () => void;
   onOpenAdmin: () => void;
   onLogout: () => Promise<void>;
 }) {
   return (
     <aside
-      className="hidden lg:flex w-60 shrink-0 flex-col gap-5 px-4 py-5 border-r border-border surface-glass"
+      className={cn(
+        "hidden lg:flex shrink-0 flex-col gap-5 py-5 border-r border-border surface-glass transition-[width,padding] duration-200",
+        collapsed ? "w-[4.75rem] px-3" : "w-60 px-4",
+      )}
       aria-label="Primary"
     >
-      <NavLink to="/" className="active:scale-[0.98] transition-transform duration-150">
-        <BrandMark variant="stacked" />
-      </NavLink>
+      <div className={cn("flex items-start gap-2", collapsed ? "flex-col items-center" : "justify-between")}>
+        <NavLink
+          to="/"
+          className="active:scale-[0.98] transition-transform duration-150 min-w-0"
+          aria-label="Home"
+        >
+          {collapsed ? (
+            <img
+              src="/qmul-logo.png"
+              alt="QM minus"
+              className="h-9 w-9 rounded-full shrink-0"
+            />
+          ) : (
+            <BrandMark variant="stacked" />
+          )}
+        </NavLink>
+        <button
+          type="button"
+          onClick={onToggleCollapsed}
+          className="btn-ghost p-2 shrink-0"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="h-4 w-4" aria-hidden="true" strokeWidth={2.2} />
+          ) : (
+            <PanelLeftClose className="h-4 w-4" aria-hidden="true" strokeWidth={2.2} />
+          )}
+        </button>
+      </div>
 
       <nav className="flex flex-col gap-0.5">
         {NAV.map(({ to, label, icon: Icon }) => (
-          <SidebarNavLink key={to} to={to} label={label} icon={Icon} end={to === "/"} />
+          <SidebarNavLink
+            key={to}
+            to={to}
+            label={label}
+            icon={Icon}
+            end={to === "/"}
+            collapsed={collapsed}
+          />
         ))}
         {user?.is_admin && (
-          <SidebarNavLink to="/admin" label="Admin" icon={ShieldCheck} />
+          <SidebarNavLink
+            to="/admin"
+            label="Admin"
+            icon={ShieldCheck}
+            collapsed={collapsed}
+          />
         )}
       </nav>
 
       <div className="mt-auto flex flex-col gap-2">
         {user && (
-          <div className="flex items-center gap-2 px-2 py-1.5 rounded-full border border-border bg-foreground/5">
+          <div
+            className={cn(
+              "flex items-center gap-2 rounded-full border border-border bg-foreground/5",
+              collapsed ? "justify-center p-1.5" : "px-2 py-1.5",
+            )}
+            title={collapsed ? user.username : undefined}
+          >
             {user.avatar && (
               <img
                 src={user.avatar}
@@ -200,16 +265,24 @@ function DesktopSidebar({
                 className="h-6 w-6 rounded-full shrink-0"
               />
             )}
-            <span className="truncate text-xs font-medium flex-1">{user.username}</span>
+            <span className={cn("truncate text-xs font-medium flex-1", collapsed && "sr-only")}>
+              {user.username}
+            </span>
             {user.is_admin && (
-              <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" aria-hidden="true" />
+              <ShieldCheck
+                className={cn("h-3.5 w-3.5 text-primary shrink-0", collapsed && "sr-only")}
+                aria-hidden="true"
+              />
             )}
           </div>
         )}
-        <div className="flex items-center gap-1">
+        <div className={cn("flex items-center gap-1", collapsed && "flex-col")}>
           <button
             onClick={onToggleTheme}
-            className="btn-ghost flex-1 justify-start gap-2 px-2 py-1.5"
+            className={cn(
+              "btn-ghost flex-1 gap-2 px-2 py-1.5",
+              collapsed ? "w-full justify-center" : "justify-start",
+            )}
             aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
             title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
           >
@@ -218,7 +291,9 @@ function DesktopSidebar({
             ) : (
               <Moon className="h-4 w-4" />
             )}
-            <span className="text-xs">{theme === "dark" ? "Light" : "Dark"}</span>
+            <span className={cn("text-xs", collapsed && "sr-only")}>
+              {theme === "dark" ? "Light" : "Dark"}
+            </span>
           </button>
           {user && (
             <>

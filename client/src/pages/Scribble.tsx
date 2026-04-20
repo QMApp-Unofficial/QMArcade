@@ -11,6 +11,7 @@ import {
   type DrawingCanvasHandle,
   type StrokeShape,
 } from "@/components/DrawingCanvas";
+import { FullscreenButton } from "@/components/FullscreenButton";
 import { useAuth } from "@/hooks/useAuth";
 import type {
   ScribbleChatMessage,
@@ -43,6 +44,7 @@ export function ScribblePage() {
   const [size, setSize] = useState(5);
   const [erasing, setErasing] = useState(false);
   const canvasRef = useRef<DrawingCanvasHandle | null>(null);
+  const activityRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -180,8 +182,9 @@ export function ScribblePage() {
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-      <Card>
+    <div ref={activityRef} className="activity-fullscreen flex-1 min-h-0">
+      <div className="activity-fullscreen-grid grid h-full min-h-0 gap-3 grid-rows-[minmax(0,1fr)_minmax(9rem,30dvh)] lg:grid-rows-none lg:grid-cols-[minmax(0,1fr)_320px]">
+      <Card className="min-h-0 flex flex-col overflow-hidden">
         <CardHeader
           title="Scribble"
           description={
@@ -196,6 +199,7 @@ export function ScribblePage() {
                   ⏱ {secondsLeft}s
                 </span>
               )}
+              <FullscreenButton targetRef={activityRef} label="scribble" />
               <Button
                 variant="ghost"
                 onClick={copyInvite}
@@ -225,7 +229,7 @@ export function ScribblePage() {
             we show the word so latecomers catch up. */}
         <WordSlots state={state} isDrawer={isDrawer} />
 
-        <div className="relative">
+        <div className="relative flex-1 min-h-0">
           <DrawingCanvas
             ref={canvasRef}
             readOnly={!isDrawer || state?.phase !== "drawing"}
@@ -233,6 +237,7 @@ export function ScribblePage() {
             size={size}
             erasing={erasing}
             onStrokeComplete={onStroke}
+            className="h-full min-h-0 aspect-auto"
             aria-label={
               isDrawer ? "Drawing canvas (you)" : "Drawing canvas (spectator)"
             }
@@ -254,7 +259,7 @@ export function ScribblePage() {
           </AnimatePresence>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2 shrink-0">
           <div className="flex gap-1" role="group" aria-label="colors">
             {COLORS.map((c) => (
               <button
@@ -302,8 +307,8 @@ export function ScribblePage() {
         </div>
       </Card>
 
-      <div className="space-y-4">
-        <Card>
+      <div className="min-h-0 flex flex-col gap-3 overflow-hidden">
+        <Card className="shrink-0 max-h-[42%] overflow-auto">
           <CardHeader title="Players" />
           <ul className="space-y-2">
             {state?.players.map((p) => (
@@ -333,11 +338,11 @@ export function ScribblePage() {
             ))}
           </ul>
         </Card>
-        <Card>
+        <Card className="min-h-0 flex flex-col overflow-hidden">
           <CardHeader title="Guesses" />
           <div
             ref={chatScrollRef}
-            className="h-64 overflow-auto space-y-1 pr-1"
+            className="min-h-0 flex-1 overflow-auto space-y-1 pr-1"
             role="log"
             aria-live="polite"
           >
@@ -364,7 +369,7 @@ export function ScribblePage() {
             ))}
           </div>
           <form
-            className="flex gap-2 mt-3"
+            className="flex gap-2 mt-3 shrink-0"
             onSubmit={(e) => {
               e.preventDefault();
               submitGuess();
@@ -382,6 +387,7 @@ export function ScribblePage() {
             </Button>
           </form>
         </Card>
+      </div>
       </div>
     </div>
   );

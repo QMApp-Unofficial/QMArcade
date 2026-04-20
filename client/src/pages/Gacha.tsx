@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { FullscreenButton } from "@/components/FullscreenButton";
 import { api } from "@/lib/api";
 import type {
   GachaCharacter,
@@ -31,6 +32,7 @@ const RARITY_CLASS: Record<Rarity, string> = {
 
 export function GachaPage() {
   const toast = useToast();
+  const activityRef = useRef<HTMLDivElement | null>(null);
   const [status, setStatus] = useState<GachaStatus | null>(null);
   const [inventory, setInventory] = useState<GachaInventoryEntry[]>([]);
   const [totalRoster, setTotalRoster] = useState<number>(0);
@@ -124,13 +126,14 @@ export function GachaPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div ref={activityRef} className="activity-fullscreen activity-fullscreen-scroll space-y-6">
       <Card>
         <CardHeader
           title="Character Gacha"
           description={`${GACHA.ROLLS_PER_WINDOW} rolls every ${GACHA.WINDOW_HOURS}h. Duplicates convert to currency.`}
           right={
-            <div className="flex items-center gap-3 text-sm">
+            <div className="flex flex-wrap items-center justify-end gap-2 text-sm">
+              <FullscreenButton targetRef={activityRef} label="gacha" />
               <span className="chip" aria-label="Currency">
                 <Coins className="h-3.5 w-3.5" /> {status?.currency ?? 0}
               </span>

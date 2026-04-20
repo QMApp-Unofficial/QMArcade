@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { FullscreenButton } from "@/components/FullscreenButton";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import { WORDLE } from "@qmul/shared";
@@ -42,6 +43,7 @@ function feedbackToEmoji(fb: LetterFeedback): string {
 
 export function WordlePage() {
   const toast = useToast();
+  const activityRef = useRef<HTMLDivElement | null>(null);
   const [state, setState] = useState<WordleState | null>(null);
   const [stats, setStats] = useState<WordleStats | null>(null);
   const [current, setCurrent] = useState("");
@@ -161,7 +163,7 @@ export function WordlePage() {
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col items-center w-full">
+    <div ref={activityRef} className="activity-fullscreen flex-1 min-h-0 flex flex-col items-center w-full">
       <div className="w-full max-w-xl flex-1 min-h-0 flex flex-col">
         <div className="flex items-end justify-between gap-2 mb-3 shrink-0">
           <div className="min-w-0">
@@ -179,6 +181,7 @@ export function WordlePage() {
             </h3>
           </div>
           <div className="flex items-center gap-2">
+            <FullscreenButton targetRef={activityRef} label="wordle" />
             <Button
               variant="secondary"
               onClick={() => setStatsOpen(true)}
