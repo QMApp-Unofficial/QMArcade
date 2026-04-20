@@ -41,5 +41,13 @@ export const WHITEBOARD = {
 };
 
 export const APP = {
-  NAME: "QMUL Arcade",
+  /**
+   * Display name for the app. The trailing character is U+207B SUPERSCRIPT
+   * MINUS — the app is branded as a negative ion ("QM minus"), not "QMUL".
+   * Use this constant for human-readable headings only; do NOT embed it in
+   * URLs or identifiers.
+   */
+  NAME: "QM⁻",
+  /** The longer collegiate spelling, for titles, email copy, and share text. */
+  LONG_NAME: "QM⁻ · Queen Mary Arcade",
 };

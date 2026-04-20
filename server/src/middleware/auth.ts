@@ -1,11 +1,40 @@
 import type { NextFunction, Request, Response } from "express";
 import { env } from "../env";
+import { upsertUser } from "../db";
 
 declare global {
   namespace Express {
     interface Request {
       user?: { discord_id: string; username: string; avatar: string | null };
     }
+  }
+}
+
+/**
+ * In-process cache of which discord_ids we've already materialised into the
+ * users table during this server's lifetime. Upserting on every authenticated
+ * request would be wasteful; authenticating the same user twice without ever
+ * touching the DB would break the foreign-key constraints on wordle_plays,
+ * gacha_inventory, etc. The cache keys on the identity tuple so a username or
+ * avatar change triggers a re-upsert.
+ */
+const userCache = new Set<string>();
+
+function ensureUserRow(user: {
+  discord_id: string;
+  username: string;
+  avatar: string | null;
+}) {
+  const key = `${user.discord_id}|${user.username}|${user.avatar ?? ""}`;
+  if (userCache.has(key)) return;
+  try {
+    upsertUser(user);
+    userCache.add(key);
+  } catch (err) {
+    // If the upsert fails we'd rather know about it than silently run into
+    // cascading FK violations downstream.
+    console.error("[auth] upsertUser failed", err);
+    throw err;
   }
 }
 
@@ -27,7 +56,17 @@ export function requireUser(
     null;
 
   if (!id) return res.status(401).json({ error: "not_authenticated" });
-  req.user = { discord_id: String(id), username: String(username), avatar };
+  const user = {
+    discord_id: String(id),
+    username: String(username),
+    avatar: avatar ? String(avatar) : null,
+  };
+  try {
+    ensureUserRow(user);
+  } catch {
+    return res.status(500).json({ error: "user_provision_failed" });
+  }
+  req.user = user;
   next();
 }
 

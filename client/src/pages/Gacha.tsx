@@ -91,7 +91,18 @@ export function GachaPage() {
         });
       }
     } catch (e: any) {
-      toast.push({ title: "Roll failed", description: e?.message, tone: "error" });
+      const code = e?.message;
+      toast.push({
+        title: code === "cooldown"
+          ? "No rolls left"
+          : code === "not_authenticated"
+            ? "Please log in again"
+            : "Roll failed",
+        description: code === "cooldown"
+          ? "Your next rolls are still regenerating."
+          : code || "Network error — check your connection.",
+        tone: "error",
+      });
     } finally {
       setRolling(false);
     }

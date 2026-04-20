@@ -15,11 +15,30 @@ const router = Router();
 
 const WINDOW_MS = GACHA.WINDOW_HOURS * 60 * 60 * 1000;
 
+/**
+ * `gacha_rolls.rolled_at` is populated by SQLite's `datetime('now')`, which
+ * returns strings like `'2026-04-20 16:59:34'` (space separator, no fractional
+ * seconds, no `Z`). Doing a string comparison against `Date#toISOString()`
+ * (which uses `T` and trailing `Z`) silently never matches — SQLite would see
+ * every row as older than `since`, reporting 0 rolls used and letting users
+ * roll without any window limit. Format the JS side to match SQLite so the
+ * comparison is meaningful.
+ */
+function toSqliteDatetime(d: Date): string {
+  return d.toISOString().replace("T", " ").replace(/\.\d+Z$/, "");
+}
+
+function fromSqliteDatetime(s: string): Date {
+  // SQLite `datetime('now')` values are in UTC but lack the `Z` suffix; without
+  // it, `new Date(...)` interprets them as local time, so we re-append it.
+  return new Date(s.includes("T") ? s : `${s.replace(" ", "T")}Z`);
+}
+
 function computeRollsRemaining(uid: string): {
   remaining: number;
   nextRefreshAt: string;
 } {
-  const since = new Date(Date.now() - WINDOW_MS).toISOString();
+  const since = toSqliteDatetime(new Date(Date.now() - WINDOW_MS));
   const row = db
     .prepare(
       `SELECT COUNT(*) AS used, MIN(rolled_at) AS earliest
@@ -30,7 +49,7 @@ function computeRollsRemaining(uid: string): {
   const used = row.used ?? 0;
   const remaining = Math.max(0, GACHA.ROLLS_PER_WINDOW - used);
   const nextRefreshAt = row.earliest
-    ? new Date(new Date(row.earliest).getTime() + WINDOW_MS).toISOString()
+    ? new Date(fromSqliteDatetime(row.earliest).getTime() + WINDOW_MS).toISOString()
     : new Date(Date.now() + WINDOW_MS).toISOString();
   return { remaining, nextRefreshAt };
 }

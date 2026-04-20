@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Sparkles,
   Palette,
@@ -39,7 +39,7 @@ const TILES: Tile[] = [
   {
     to: "/scribble",
     title: "Scribble",
-    description: "Draw, guess, laugh. 2–8 friends.",
+    description: "Draw, guess, laugh.",
     icon: PenLine,
     hue: "200 78% 46%",
   },
@@ -59,16 +59,34 @@ const TILES: Tile[] = [
   },
 ];
 
-const PICKER_SIZE = "min(88vw, max(280px, 100dvh - 380px), 520px)";
+/*
+ * Picker sizing.
+ *
+ * User asked for the atom to show "only the top 3/4" so the crown logo reads
+ * as the visible center of the screen and the bottom orbital tiles dip below
+ * the fold. We do this by:
+ *   1. Making the picker a *square* of PICKER_SIZE.
+ *   2. Wrapping it in an overflow-hidden frame whose height is 78% of the
+ *      picker so the bottom quarter is clipped.
+ *   3. Absolute-positioning the square inside the frame aligned top, so the
+ *      visible window captures the top three-quarters (including the nucleus,
+ *      which sits at the square's geometric center).
+ *
+ * PICKER_SIZE is bounded by 100dvh so the whole thing fits the Discord iframe
+ * without ever introducing scroll.
+ */
+const PICKER_SIZE = "min(84vw, max(260px, 100dvh - 320px), 520px)";
 const RADIUS = `calc(${PICKER_SIZE} * 0.395)`;
+const VISIBLE_HEIGHT = `calc(${PICKER_SIZE} * 0.78)`;
 
 export function Home() {
   const { user } = useAuth();
   const [hovered, setHovered] = useState<number | null>(null);
+  const [nucleusZap, setNucleusZap] = useState(0);
   const active = hovered !== null ? TILES[hovered] : null;
 
   return (
-    <div className="relative flex-1 min-h-0 flex flex-col items-center justify-center gap-3 md:gap-5 py-2">
+    <div className="relative flex-1 min-h-0 flex flex-col items-center gap-3 md:gap-4 py-1 md:py-2">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 overflow-hidden"
@@ -84,17 +102,34 @@ export function Home() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
-        className="relative flex flex-col items-center text-center px-4"
+        className="relative flex flex-col items-center text-center px-4 shrink-0"
       >
         <p className="chip mb-3">
           <Sparkles className="h-3 w-3" aria-hidden="true" />
           <span>{user ? `Welcome back, ${user.username}` : "Queen Mary · arcade"}</span>
         </p>
         <h1
-          className="font-display text-[clamp(2.2rem,7vw,4.25rem)] font-extrabold leading-[0.92] tracking-[-0.035em] text-foreground"
-          style={{ fontVariationSettings: '"wdth" 82, "opsz" 96' }}
+          className="font-display font-extrabold leading-[0.92] tracking-[-0.035em] text-foreground flex items-baseline"
+          style={{
+            fontSize: "clamp(2.2rem, 7vw, 4.25rem)",
+            fontVariationSettings: '"wdth" 82, "opsz" 96',
+          }}
         >
-          {APP.NAME}
+          <span>QM</span>
+          <span
+            aria-hidden="true"
+            className="text-accent"
+            style={{
+              fontSize: "0.6em",
+              lineHeight: 1,
+              marginLeft: "0.05em",
+              transform: "translateY(-0.55em)",
+              display: "inline-block",
+            }}
+          >
+            −
+          </span>
+          <span className="sr-only">{APP.LONG_NAME}</span>
         </h1>
         <div className="mt-2 flex items-center gap-3 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
           <span className="h-px w-6 bg-border" />
@@ -103,14 +138,37 @@ export function Home() {
         </div>
       </motion.section>
 
+      {/* Top-3/4 crop wrapper. The full picker is square; visible region is 78%
+         of its height so the nucleus ends up near the vertical middle of the
+         remaining space, just as the attached mock shows. */}
       <motion.section
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-        className="relative grid place-items-center w-full"
+        className="relative w-full flex-1 min-h-0 flex items-start justify-center"
         aria-label="Activity picker"
       >
-        <CircularPicker hovered={hovered} onHover={setHovered} active={active} />
+        <div
+          className="relative"
+          style={{
+            width: PICKER_SIZE,
+            height: VISIBLE_HEIGHT,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            className="absolute left-0 top-0"
+            style={{ width: PICKER_SIZE, height: PICKER_SIZE }}
+          >
+            <CircularPicker
+              hovered={hovered}
+              onHover={setHovered}
+              active={active}
+              onNucleusZap={() => setNucleusZap((n) => n + 1)}
+              zapKey={nucleusZap}
+            />
+          </div>
+        </div>
       </motion.section>
 
       <motion.p
@@ -119,7 +177,9 @@ export function Home() {
         transition={{ delay: 0.6, duration: 0.4 }}
         className="text-[11px] text-muted-foreground text-center px-4 shrink-0"
       >
-        {active ? "Click to launch →" : "Hover a tile — they orbit while you decide."}
+        {active
+          ? "Click to launch →"
+          : "Hover a tile — or poke the nucleus."}
       </motion.p>
     </div>
   );
@@ -129,25 +189,47 @@ function CircularPicker({
   hovered,
   onHover,
   active,
+  onNucleusZap,
+  zapKey,
 }: {
   hovered: number | null;
   onHover: (i: number | null) => void;
   active: Tile | null;
+  onNucleusZap: () => void;
+  zapKey: number;
 }) {
   const count = TILES.length;
   const paused = hovered !== null;
+  const [darts, setDarts] = useState<{ id: number; dx: number; dy: number }[]>([]);
+  const dartId = useRef(0);
+
+  function handleNucleusClick() {
+    onNucleusZap();
+    const burst = Array.from({ length: 6 }, () => {
+      dartId.current += 1;
+      const theta = Math.random() * Math.PI * 2;
+      const dist = 80 + Math.random() * 60;
+      return {
+        id: dartId.current,
+        dx: Math.cos(theta) * dist,
+        dy: Math.sin(theta) * dist,
+      };
+    });
+    setDarts((prev) => [...prev, ...burst]);
+    window.setTimeout(() => {
+      setDarts((prev) => prev.filter((d) => !burst.some((b) => b.id === d.id)));
+    }, 900);
+  }
 
   return (
-    <div
-      className="relative mx-auto"
-      style={{
-        width: PICKER_SIZE,
-        height: PICKER_SIZE,
-      }}
-    >
+    <div className="relative mx-auto w-full h-full">
+      {/* Decorative orbit rings, with the outermost ring drifting between
+         navy and amber to give the idle state a subtle life without
+         distracting the user. */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 rounded-full border border-accent/25 animate-orbit-glow"
+        className="absolute inset-0 rounded-full border animate-orbit-glow animate-ring-hue-drift"
+        style={{ borderColor: "hsl(var(--accent) / 0.28)" }}
       />
       <div
         aria-hidden="true"
@@ -182,6 +264,7 @@ function CircularPicker({
               >
                 <OrbitTile
                   tile={tile}
+                  index={i}
                   isHovered={hovered === i}
                   isDimmed={hovered !== null && hovered !== i}
                   onEnter={() => onHover(i)}
@@ -193,44 +276,84 @@ function CircularPicker({
         })}
       </div>
 
-      <div className="absolute inset-[34%] grid place-items-center pointer-events-none">
-        <motion.div
-          key={active?.to || "idle"}
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.25 }}
-          className="text-center"
-        >
-          {active ? (
-            <div className="flex flex-col items-center gap-1.5">
-              <div
-                className="h-10 w-10 md:h-12 md:w-12 rounded-xl grid place-items-center"
-                style={{
-                  background: `hsl(${active.hue} / 0.2)`,
-                  color: `hsl(${active.hue})`,
-                }}
-              >
-                <active.icon className="h-5 w-5 md:h-6 md:w-6" />
+      <div className="absolute inset-[34%] grid place-items-center">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={active?.to || "idle"}
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+            className="text-center"
+          >
+            {active ? (
+              <div className="flex flex-col items-center gap-1.5 pointer-events-none">
+                <div
+                  className="h-10 w-10 md:h-12 md:w-12 rounded-xl grid place-items-center"
+                  style={{
+                    background: `hsl(${active.hue} / 0.2)`,
+                    color: `hsl(${active.hue})`,
+                  }}
+                >
+                  <active.icon className="h-5 w-5 md:h-6 md:w-6" />
+                </div>
+                <span className="font-display font-semibold text-sm md:text-base">
+                  {active.title}
+                </span>
+                <span className="text-[10px] md:text-xs text-muted-foreground px-2 max-w-[12rem]">
+                  {active.description}
+                </span>
               </div>
-              <span className="font-display font-semibold text-sm md:text-base">
-                {active.title}
-              </span>
-              <span className="text-[10px] md:text-xs text-muted-foreground px-2 max-w-[12rem]">
-                {active.description}
-              </span>
-            </div>
-          ) : (
-            <div className="relative h-24 w-24 grid place-items-center">
-              <div className="absolute inset-0 rounded-full bg-accent/15 blur-2xl animate-orbit-glow" />
-              <img
-                src="/qmul-logo.png"
-                alt=""
-                aria-hidden="true"
-                className="relative h-20 w-20 rounded-full shadow-lg shadow-primary/25"
-              />
-            </div>
-          )}
-        </motion.div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleNucleusClick}
+                aria-label="Charge the nucleus"
+                className="relative h-24 w-24 grid place-items-center cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-full"
+              >
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 rounded-full bg-accent/15 blur-xl animate-halo-pulse"
+                />
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 rounded-full bg-primary/12 blur-2xl animate-halo-pulse"
+                  style={{ animationDelay: "1.6s" }}
+                />
+                <img
+                  key={zapKey}
+                  src="/qmul-logo.png"
+                  alt=""
+                  aria-hidden="true"
+                  className={cn(
+                    "relative h-20 w-20 rounded-full shadow-lg shadow-primary/25 animate-nucleus-breathe",
+                    zapKey > 0 && "animate-nucleus-zap",
+                  )}
+                />
+              </button>
+            )}
+          </motion.div>
+        </AnimatePresence>
+
+        {darts.map((d) => (
+          <span
+            key={d.id}
+            aria-hidden="true"
+            className="absolute h-2 w-2 rounded-full bg-accent shadow-[0_0_12px_hsl(var(--accent))] pointer-events-none"
+            style={
+              {
+                left: "50%",
+                top: "50%",
+                marginLeft: "-0.25rem",
+                marginTop: "-0.25rem",
+                "--dx": `${d.dx}px`,
+                "--dy": `${d.dy}px`,
+                animation:
+                  "electron-dart 800ms cubic-bezier(0.23, 1, 0.32, 1) forwards",
+              } as React.CSSProperties
+            }
+          />
+        ))}
       </div>
     </div>
   );
@@ -238,12 +361,14 @@ function CircularPicker({
 
 function OrbitTile({
   tile,
+  index,
   isHovered,
   isDimmed,
   onEnter,
   onLeave,
 }: {
   tile: Tile;
+  index: number;
   isHovered: boolean;
   isDimmed: boolean;
   onEnter: () => void;
@@ -265,10 +390,13 @@ function OrbitTile({
       )}
       aria-label={`Open ${tile.title}`}
       style={{
-        transition: "transform 220ms var(--ease-out-quint), opacity 220ms var(--ease-out-quint), box-shadow 220ms var(--ease-out-quint)",
+        transition:
+          "transform 220ms var(--ease-out-quint), opacity 220ms var(--ease-out-quint), box-shadow 220ms var(--ease-out-quint)",
         boxShadow: isHovered
           ? `0 0 0 1px hsl(${tile.hue} / 0.55), 0 18px 38px -14px hsl(${tile.hue} / 0.55)`
           : undefined,
+        animation: `float-up 5s var(--ease-in-out-quart) infinite`,
+        animationDelay: `${(index * 0.35).toFixed(2)}s`,
       }}
     >
       <div

@@ -98,7 +98,16 @@ export function WordlePage() {
           tone: "error",
         });
       } else {
-        toast.push({ title: "Something went wrong", description: code, tone: "error" });
+        // Show the real error rather than a generic fallback so bad network /
+        // auth states are diagnosable. Falls back to the raw message for
+        // unknown codes.
+        toast.push({
+          title: code === "not_authenticated"
+            ? "Please log in again"
+            : "Couldn't submit guess",
+          description: code || "Network error — check your connection.",
+          tone: "error",
+        });
       }
     } finally {
       setBusy(false);
@@ -127,7 +136,7 @@ export function WordlePage() {
     const rows = state.feedback.map((row) => row.map(feedbackToEmoji).join("")).join("\n");
     const score =
       state.status === "won" ? `${state.guesses.length}/${WORDLE.MAX_ATTEMPTS}` : "X/6";
-    return `QMUL Wordle ${state.date} ${score}\n${rows}`;
+    return `QM⁻ Wordle ${state.date} ${score}\n${rows}`;
   }, [state]);
 
   function onShare() {
