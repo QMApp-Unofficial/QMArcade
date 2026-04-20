@@ -139,6 +139,9 @@ Both flows require the caller's `discord_id` to be in `ADMIN_DISCORD_IDS`. The U
 - Rarity weights: 70 / 22 / 7 / 1.
 - Duplicate rolls grant currency (5 / 15 / 50 / 200). Currency is stored but not yet spendable — a natural next feature.
 - Add or swap the roster in `server/src/data/characters.ts`. Point `image` at your own CDN / licensed art.
+- To add your own photos, put the image in `client/public/gacha/` and set the
+  character image to `/gacha/your-file-name.png`, or paste a full `https://`
+  image URL in `server/src/data/characters.ts`. Keep each `id` unique.
 
 ### Scribble
 - Join a room by ID (default `main`). 2–8 players.

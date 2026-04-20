@@ -45,6 +45,10 @@ export function drawWordChoices(count = 3, custom?: string[]): string[] {
   return picks;
 }
 
-export function maskWord(word: string): string {
-  return word.replace(/[a-zA-Z]/g, "_");
+export function maskWord(word: string, revealedIndexes: Iterable<number> = []): string {
+  const visible = new Set(revealedIndexes);
+  return word
+    .split("")
+    .map((ch, i) => (/[a-z0-9]/i.test(ch) ? (visible.has(i) ? ch : "_") : ch))
+    .join("");
 }

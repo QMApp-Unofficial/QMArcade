@@ -187,8 +187,8 @@ export function WordlePage() {
               <BarChart3 className="h-4 w-4" strokeWidth={2.2} /> Stats
             </Button>
             {state.status !== "in_progress" && (
-              <Button variant="secondary" onClick={onShare} aria-label="Copy result to clipboard">
-                <Copy className="h-4 w-4" strokeWidth={2.2} /> Copy result
+              <Button variant="secondary" onClick={onShare} aria-label="Copy results to clipboard">
+                <Copy className="h-4 w-4" strokeWidth={2.2} /> Copy results
               </Button>
             )}
           </div>
@@ -271,8 +271,8 @@ export function WordlePage() {
           </div>
         ) : (
           <div className="shrink-0 flex justify-center mt-3">
-            <Button onClick={onShare} aria-label="Copy result to clipboard">
-              <Copy className="h-4 w-4" strokeWidth={2.2} /> Copy result
+            <Button onClick={onShare} aria-label="Copy results to clipboard">
+              <Copy className="h-4 w-4" strokeWidth={2.2} /> Copy results
             </Button>
           </div>
         )}

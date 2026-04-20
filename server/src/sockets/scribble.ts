@@ -23,9 +23,11 @@ interface Room {
   hostSocketId: string | null;
   word: string | null;
   wordChoices: string[];
+  hintIndexes: number[];
   round: number;
   totalRounds: number;
   timer: NodeJS.Timeout | null;
+  hintTimer: NodeJS.Timeout | null;
   endsAt: number | null;
   roundStartedAt: number | null;
   strokes: ScribbleStroke[];
@@ -51,9 +53,11 @@ function getOrCreate(id: string): Room {
     hostSocketId: null,
     word: null,
     wordChoices: [],
+    hintIndexes: [],
     round: 0,
     totalRounds: SCRIBBLE.ROUNDS_PER_GAME,
     timer: null,
+    hintTimer: null,
     endsAt: null,
     roundStartedAt: null,
     strokes: [],
@@ -103,11 +107,54 @@ function isCloseGuess(guess: string, target: string): boolean {
   return t.length <= 4 ? d === 1 : d <= 2;
 }
 
+function hintableIndexes(word: string): number[] {
+  return word
+    .split("")
+    .map((ch, i) => (/[a-z0-9]/i.test(ch) ? i : -1))
+    .filter((i) => i >= 0);
+}
+
+function stableScore(input: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function chooseHintIndexes(word: string): number[] {
+  const indexes = hintableIndexes(word);
+  const maxHints = Math.max(0, Math.min(3, indexes.length - 1));
+  return indexes
+    .map((index) => ({ index, score: stableScore(`${word}:${index}`) }))
+    .sort((a, b) => a.score - b.score)
+    .slice(0, maxHints)
+    .map((entry) => entry.index);
+}
+
+function visibleHintCount(room: Room, now = Date.now()): number {
+  if (room.phase !== "drawing" || !room.word || !room.endsAt) return 0;
+  const maxHints = Math.min(room.hintIndexes.length, 3);
+  if (maxHints <= 0) return 0;
+
+  const totalMs = SCRIBBLE.ROUND_SECONDS * 1000;
+  const remaining = Math.max(0, room.endsAt - now);
+  if (remaining <= totalMs * 0.2) return maxHints;
+  if (remaining <= totalMs * 0.45) return Math.min(2, maxHints);
+  if (remaining <= totalMs * 0.7) return Math.min(1, maxHints);
+  return 0;
+}
+
 function publicState(room: Room, forSocketId?: string): ScribbleRoomState {
   const players: ScribblePlayer[] = [...room.players.values()].map((p) => ({
     ...p,
     isDrawer: room.players.get(room.drawerSocketId || "")?.discord_id === p.discord_id,
   }));
+  const hintedMask =
+    room.phase === "drawing" && room.word
+      ? maskWord(room.word, room.hintIndexes.slice(0, visibleHintCount(room)))
+      : undefined;
   return {
     roomId: room.id,
     players,
@@ -126,7 +173,7 @@ function publicState(room: Room, forSocketId?: string): ScribbleRoomState {
       room.phase === "drawing" && room.word
         ? forSocketId === room.drawerSocketId
           ? room.word
-          : maskWord(room.word)
+          : hintedMask
         : undefined,
     wordLength:
       room.phase === "drawing" && room.word ? room.word.length : undefined,
@@ -147,7 +194,9 @@ function broadcastState(io: Server, room: Room) {
 
 function clearTimer(room: Room) {
   if (room.timer) clearTimeout(room.timer);
+  if (room.hintTimer) clearInterval(room.hintTimer);
   room.timer = null;
+  room.hintTimer = null;
   room.endsAt = null;
 }
 
@@ -175,6 +224,7 @@ function beginTurn(io: Server, room: Room) {
   room.strokes = [];
   room.word = null;
   room.wordChoices = drawWordChoices(3, room.customWords);
+  room.hintIndexes = [];
   // Reset round guess flags
   for (const p of room.players.values()) p.guessedThisRound = false;
 
@@ -214,10 +264,14 @@ function pickWord(io: Server, room: Room, word: string) {
   if (!room.wordChoices.includes(word)) return;
   clearTimer(room);
   room.word = word;
+  room.hintIndexes = chooseHintIndexes(word);
   room.phase = "drawing";
   room.roundStartedAt = Date.now();
   room.endsAt = Date.now() + SCRIBBLE.ROUND_SECONDS * 1000;
   room.timer = setTimeout(() => revealWord(io, room), SCRIBBLE.ROUND_SECONDS * 1000);
+  room.hintTimer = setInterval(() => {
+    if (room.phase === "drawing") broadcastState(io, room);
+  }, 1000);
   broadcastState(io, room);
 }
 

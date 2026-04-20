@@ -74,15 +74,19 @@ export function Home() {
   const active = hovered !== null ? TILES[hovered] : null;
 
   return (
-    <div className="relative flex-1 min-h-0 flex flex-col items-center gap-3 md:gap-4 py-1 md:py-2">
+    <div className="relative isolate flex-1 min-h-0 flex flex-col items-center gap-3 md:gap-4 py-1 md:py-2">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 overflow-hidden"
+        className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
       >
-        <div className="absolute -top-24 -left-24 h-[420px] w-[420px] rounded-full bg-accent/10 blur-3xl animate-float" />
+        <div className="absolute -top-40 -left-48 h-[760px] w-[760px] rounded-full bg-accent/10 blur-3xl animate-float" />
         <div
-          className="absolute top-1/2 -right-24 h-[420px] w-[420px] rounded-full bg-primary/10 blur-3xl animate-float"
+          className="absolute top-[42%] -right-56 h-[780px] w-[780px] rounded-full bg-primary/10 blur-3xl animate-float"
           style={{ animationDelay: "-2.4s" }}
+        />
+        <div
+          className="absolute -bottom-48 left-[38%] h-[700px] w-[700px] rounded-full bg-accent/[0.08] blur-3xl animate-float"
+          style={{ animationDelay: "-4.2s" }}
         />
       </div>
 
@@ -90,7 +94,7 @@ export function Home() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
-        className="relative flex flex-col items-center text-center px-4 shrink-0"
+        className="relative z-10 flex flex-col items-center text-center px-4 shrink-0"
       >
         <p className="chip mb-3">
           <Sparkles className="h-3 w-3" aria-hidden="true" />
@@ -130,7 +134,7 @@ export function Home() {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-        className="relative w-full flex-1 min-h-0 flex items-center justify-center"
+        className="relative z-10 w-full flex-1 min-h-0 flex items-center justify-center"
         aria-label="Activity picker"
       >
         <div
@@ -151,7 +155,7 @@ export function Home() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6, duration: 0.4 }}
-        className="text-[11px] text-muted-foreground text-center px-4 shrink-0"
+        className="relative z-10 text-[11px] text-muted-foreground text-center px-4 shrink-0"
       >
         {active
           ? "Click to launch →"
@@ -252,7 +256,7 @@ function CircularPicker({
         })}
       </div>
 
-      <div className="absolute inset-[34%] grid place-items-center">
+      <div className="absolute left-1/2 top-1/2 z-10 grid h-40 w-40 -translate-x-1/2 -translate-y-1/2 place-items-center">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={active?.to || "idle"}

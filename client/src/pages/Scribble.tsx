@@ -423,6 +423,7 @@ function WordSlots({
     >
       {chars.map((ch, i) => {
         const isSpace = ch === " " || ch === "-";
+        const isVisibleLetter = display.reveal || ch !== "_";
         return (
           <div
             key={i}
@@ -433,7 +434,7 @@ function WordSlots({
             style={{ minWidth: isSpace ? "0.5rem" : "1.1rem" }}
           >
             <span className="h-6 leading-6">
-              {isSpace ? (ch === "-" ? "-" : "") : display.reveal ? ch : ""}
+              {isSpace ? (ch === "-" ? "-" : "") : isVisibleLetter ? ch : ""}
             </span>
             {!isSpace && (
               <span className="block h-0.5 w-full bg-foreground/60" aria-hidden />
