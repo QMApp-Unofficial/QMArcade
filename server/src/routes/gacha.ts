@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { db } from "../db";
 import { requireUser } from "../middleware/auth";
-import { CHARACTERS, CHARACTERS_BY_ID } from "../data/characters";
+import {
+  CHARACTERS,
+  CHARACTERS_BY_ID,
+  CHARACTER_IMAGE_URLS,
+} from "../data/characters";
 import { GACHA } from "@qmul/shared";
 import type {
   GachaCharacter,
@@ -14,6 +18,15 @@ import type {
 const router = Router();
 
 const WINDOW_MS = GACHA.WINDOW_HOURS * 60 * 60 * 1000;
+const IMAGE_CACHE_MAX = 300;
+
+const imageCache = new Map<
+  string,
+  {
+    body: Buffer;
+    contentType: string;
+  }
+>();
 
 /**
  * `gacha_rolls.rolled_at` is populated by SQLite's `datetime('now')`, which
@@ -83,6 +96,42 @@ function getCurrency(uid: string): number {
     .get(uid) as { currency: number } | undefined;
   return row?.currency ?? 0;
 }
+
+router.get("/image/:id", async (req, res) => {
+  const id = String(req.params.id || "");
+  const remote = CHARACTER_IMAGE_URLS[id];
+  if (!remote) return res.status(404).json({ error: "unknown_character" });
+
+  const cached = imageCache.get(id);
+  if (cached) {
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.setHeader("Content-Type", cached.contentType);
+    return res.send(cached.body);
+  }
+
+  try {
+    const remoteRes = await fetch(remote, {
+      headers: { "User-Agent": "QMArcade-gacha-image-proxy" },
+    });
+    const contentType = remoteRes.headers.get("content-type") || "";
+    if (!remoteRes.ok || !contentType.startsWith("image/")) {
+      return res.status(502).json({ error: "image_fetch_failed" });
+    }
+
+    const body = Buffer.from(await remoteRes.arrayBuffer());
+    imageCache.set(id, { body, contentType });
+    if (imageCache.size > IMAGE_CACHE_MAX) {
+      const oldest = imageCache.keys().next().value;
+      if (oldest) imageCache.delete(oldest);
+    }
+
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.setHeader("Content-Type", contentType);
+    return res.send(body);
+  } catch {
+    return res.status(502).json({ error: "image_fetch_failed" });
+  }
+});
 
 router.get("/status", requireUser, (req, res) => {
   const uid = req.user!.discord_id;

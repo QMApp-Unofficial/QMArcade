@@ -1,14 +1,24 @@
 import type { GachaCharacter } from "@qmul/shared";
 
+type InternalGachaCharacter = GachaCharacter & {
+  remoteImage: string;
+};
+
 function art(dex: number): string {
   return `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/${dex}.png`;
 }
 
-function mk(dex: number, name: string, rarity: GachaCharacter["rarity"]): GachaCharacter {
+function proxiedImage(id: string): string {
+  return `/api/gacha/image/${encodeURIComponent(id)}`;
+}
+
+function mk(dex: number, name: string, rarity: GachaCharacter["rarity"]): InternalGachaCharacter {
+  const id = `p_${dex}`;
   return {
-    id: `p_${dex}`,
+    id,
     name,
-    image: art(dex),
+    image: proxiedImage(id),
+    remoteImage: art(dex),
     rarity,
     source: "Pokémon",
   };
@@ -24,17 +34,19 @@ function media(
   name: string,
   source: string,
   rarity: GachaCharacter["rarity"],
-): GachaCharacter {
+): InternalGachaCharacter {
+  const characterId = `m_${id}`;
   return {
-    id: `m_${id}`,
+    id: characterId,
     name,
-    image: avatar(name, source),
+    image: proxiedImage(characterId),
+    remoteImage: avatar(name, source),
     rarity,
     source,
   };
 }
 
-const POKEMON_CHARACTERS: GachaCharacter[] = [
+const POKEMON_CHARACTERS: InternalGachaCharacter[] = [
   mk(1, "Bulbasaur", "common"),
   mk(4, "Charmander", "common"),
   mk(7, "Squirtle", "common"),
@@ -101,7 +113,7 @@ const POKEMON_CHARACTERS: GachaCharacter[] = [
   mk(384, "Rayquaza", "legendary"),
 ];
 
-const MEDIA_CHARACTERS: GachaCharacter[] = [
+const MEDIA_CHARACTERS: InternalGachaCharacter[] = [
   media("show_breaking_bad", "Walter White", "Breaking Bad", "legendary"),
   media("show_better_call_saul", "Jimmy McGill", "Better Call Saul", "epic"),
   media("show_game_of_thrones", "Tyrion Lannister", "Game of Thrones", "legendary"),
@@ -280,10 +292,18 @@ const MEDIA_CHARACTERS: GachaCharacter[] = [
   media("game_palworld", "Lamball", "Palworld", "rare"),
 ];
 
-export const CHARACTERS: GachaCharacter[] = [
+const INTERNAL_CHARACTERS: InternalGachaCharacter[] = [
   ...POKEMON_CHARACTERS,
   ...MEDIA_CHARACTERS,
 ];
+
+export const CHARACTERS: GachaCharacter[] = INTERNAL_CHARACTERS.map(
+  ({ remoteImage: _remoteImage, ...character }) => character,
+);
+
+export const CHARACTER_IMAGE_URLS: Record<string, string> = Object.fromEntries(
+  INTERNAL_CHARACTERS.map((c) => [c.id, c.remoteImage]),
+);
 
 export const CHARACTERS_BY_ID: Record<string, GachaCharacter> = Object.fromEntries(
   CHARACTERS.map((c) => [c.id, c]),
