@@ -126,90 +126,95 @@ export function GachaPage() {
   );
 
   return (
-    <div ref={activityRef} className="activity-fullscreen activity-fullscreen-scroll space-y-6">
-      <Card>
-        <CardHeader
-          title="Character Gacha"
-          description={`${GACHA.ROLLS_PER_WINDOW} rolls every ${GACHA.WINDOW_HOURS}h. Duplicates convert to currency.`}
-          right={
-            <div className="flex flex-wrap items-center justify-end gap-2 text-sm">
-              <FullscreenButton targetRef={activityRef} label="gacha" />
-              <span className="chip" aria-label="Currency">
-                <Coins className="h-3.5 w-3.5" /> {status?.currency ?? 0}
-              </span>
-              <span className="chip">
-                {status ? `${status.rollsRemaining}/${status.rollsMax}` : "…"} rolls
-              </span>
-              <span className="chip">
-                next: {formatCountdown(refreshIn)}
-              </span>
-            </div>
-          }
-        />
-        <div className="flex flex-col sm:flex-row items-center gap-6">
-          <Button
-            onClick={roll}
-            disabled={!status || status.rollsRemaining <= 0 || rolling}
-            className="sm:self-start"
-          >
-            <Sparkles className="h-4 w-4" />
-            Roll
-          </Button>
-          <p className="text-xs text-muted-foreground">
-            Weights: common {GACHA.RARITY_WEIGHTS.common}%, rare {GACHA.RARITY_WEIGHTS.rare}%, epic {GACHA.RARITY_WEIGHTS.epic}%, legendary {GACHA.RARITY_WEIGHTS.legendary}%.
-          </p>
-        </div>
-      </Card>
-
-      <AnimatePresence mode="wait">
-        {reveal && (
-          <motion.div
-            key={rollId}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            role="dialog"
-            aria-live="polite"
-            aria-label={`Rolled ${reveal.character.name}`}
-          >
-            <Card className={cn("grid sm:grid-cols-[160px_1fr] gap-5 items-center", RARITY_CLASS[reveal.character.rarity])}>
-              <motion.img
-                initial={{ rotateY: 90, opacity: 0 }}
-                animate={{ rotateY: 0, opacity: 1 }}
-                transition={{ duration: 0.45 }}
-                src={reveal.character.image}
-                alt={reveal.character.name}
-                loading="eager"
-                className="w-40 aspect-square rounded-xl bg-foreground/5 object-contain"
-              />
-              <div>
-                <div className="chip mb-2" style={{ color: GACHA.RARITY_COLORS[reveal.character.rarity] }}>
-                  {RARITY_LABEL[reveal.character.rarity]}
-                </div>
-                <h3 className="font-display text-2xl font-bold">{reveal.character.name}</h3>
-                {reveal.character.source && (
-                  <p className="text-sm text-muted-foreground">From {reveal.character.source}</p>
-                )}
-                <p className="mt-2 text-sm">
-                  {reveal.isNew
-                    ? "New to your collection!"
-                    : `Duplicate · owned ×${reveal.count} · +${reveal.currencyAwarded} currency`}
-                </p>
-                <div className="mt-3 flex gap-2">
-                  <Button variant="secondary" onClick={() => setReveal(null)}>
-                    Close
-                  </Button>
-                  <Button onClick={roll} disabled={!status || status.rollsRemaining <= 0 || rolling}>
-                    Roll again
-                  </Button>
-                </div>
+    <div
+      ref={activityRef}
+      className="gacha-page activity-fullscreen activity-fullscreen-scroll flex min-h-0 flex-col gap-6"
+    >
+      <div className={cn("gacha-top-grid grid gap-6", reveal && "xl:grid-cols-[minmax(20rem,24rem)_minmax(0,1fr)]")}>
+        <Card>
+          <CardHeader
+            title="Character Gacha"
+            description={`${GACHA.ROLLS_PER_WINDOW} rolls every ${GACHA.WINDOW_HOURS}h. Duplicates convert to currency.`}
+            right={
+              <div className="flex flex-wrap items-center justify-end gap-2 text-sm">
+                <FullscreenButton targetRef={activityRef} label="gacha" />
+                <span className="chip" aria-label="Currency">
+                  <Coins className="h-3.5 w-3.5" /> {status?.currency ?? 0}
+                </span>
+                <span className="chip">
+                  {status ? `${status.rollsRemaining}/${status.rollsMax}` : "…"} rolls
+                </span>
+                <span className="chip">
+                  next: {formatCountdown(refreshIn)}
+                </span>
               </div>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            }
+          />
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <Button
+              onClick={roll}
+              disabled={!status || status.rollsRemaining <= 0 || rolling}
+              className="sm:self-start"
+            >
+              <Sparkles className="h-4 w-4" />
+              Roll
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Weights: common {GACHA.RARITY_WEIGHTS.common}%, rare {GACHA.RARITY_WEIGHTS.rare}%, epic {GACHA.RARITY_WEIGHTS.epic}%, legendary {GACHA.RARITY_WEIGHTS.legendary}%.
+            </p>
+          </div>
+        </Card>
 
-      <Card>
+        <AnimatePresence mode="wait">
+          {reveal && (
+            <motion.div
+              key={rollId}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              role="dialog"
+              aria-live="polite"
+              aria-label={`Rolled ${reveal.character.name}`}
+            >
+              <Card className={cn("gacha-reveal-card grid gap-5 items-center sm:grid-cols-[160px_1fr]", RARITY_CLASS[reveal.character.rarity])}>
+                <motion.img
+                  initial={{ rotateY: 90, opacity: 0 }}
+                  animate={{ rotateY: 0, opacity: 1 }}
+                  transition={{ duration: 0.45 }}
+                  src={reveal.character.image}
+                  alt={reveal.character.name}
+                  loading="eager"
+                  className="gacha-reveal-image w-40 aspect-square rounded-xl bg-foreground/5 object-contain"
+                />
+                <div>
+                  <div className="chip mb-2" style={{ color: GACHA.RARITY_COLORS[reveal.character.rarity] }}>
+                    {RARITY_LABEL[reveal.character.rarity]}
+                  </div>
+                  <h3 className="font-display text-2xl font-bold">{reveal.character.name}</h3>
+                  {reveal.character.source && (
+                    <p className="text-sm text-muted-foreground">From {reveal.character.source}</p>
+                  )}
+                  <p className="mt-2 text-sm">
+                    {reveal.isNew
+                      ? "New to your collection!"
+                      : `Duplicate · owned ×${reveal.count} · +${reveal.currencyAwarded} currency`}
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    <Button variant="secondary" onClick={() => setReveal(null)}>
+                      Close
+                    </Button>
+                    <Button onClick={roll} disabled={!status || status.rollsRemaining <= 0 || rolling}>
+                      Roll again
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <Card className="gacha-collection-card">
         <CardHeader
           title={`Your collection (${inventory.length}/${totalRoster})`}
           description="Favorites appear first. Click the star to toggle."
@@ -231,54 +236,56 @@ export function GachaPage() {
             </div>
           }
         />
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {filtered
-            .slice()
-            .sort((a, b) => Number(b.favorite) - Number(a.favorite))
-            .map((e) => (
-              <div
-                key={e.character.id}
-                className={cn(
-                  "relative rounded-xl p-3 bg-foreground/5 border border-border flex flex-col",
-                  RARITY_CLASS[e.character.rarity],
-                )}
-              >
-                <img
-                  src={e.character.image}
-                  alt={e.character.name}
-                  loading="lazy"
-                  className="aspect-square w-full rounded-lg bg-foreground/5 object-contain"
-                />
-                <div className="mt-2 flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-semibold leading-none">{e.character.name}</div>
-                    <div
-                      className="text-[10px] uppercase tracking-wide mt-1"
-                      style={{ color: GACHA.RARITY_COLORS[e.character.rarity] }}
-                    >
-                      {RARITY_LABEL[e.character.rarity]} · ×{e.count}
+        <div className="gacha-collection-scroll">
+          <div className="gacha-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {filtered
+              .slice()
+              .sort((a, b) => Number(b.favorite) - Number(a.favorite))
+              .map((e) => (
+                <div
+                  key={e.character.id}
+                  className={cn(
+                    "gacha-character-card relative rounded-xl p-3 bg-foreground/5 border border-border flex flex-col",
+                    RARITY_CLASS[e.character.rarity],
+                  )}
+                >
+                  <img
+                    src={e.character.image}
+                    alt={e.character.name}
+                    loading="lazy"
+                    className="aspect-square w-full rounded-lg bg-foreground/5 object-contain"
+                  />
+                  <div className="mt-2 flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-semibold leading-none">{e.character.name}</div>
+                      <div
+                        className="text-[10px] uppercase tracking-wide mt-1"
+                        style={{ color: GACHA.RARITY_COLORS[e.character.rarity] }}
+                      >
+                        {RARITY_LABEL[e.character.rarity]} · ×{e.count}
+                      </div>
                     </div>
+                    <button
+                      className="p-1 rounded hover:bg-foreground/10"
+                      aria-label={e.favorite ? "Unfavorite" : "Favorite"}
+                      onClick={() => toggleFav(e.character, !e.favorite)}
+                    >
+                      <Star
+                        className={cn(
+                          "h-4 w-4",
+                          e.favorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground",
+                        )}
+                      />
+                    </button>
                   </div>
-                  <button
-                    className="p-1 rounded hover:bg-foreground/10"
-                    aria-label={e.favorite ? "Unfavorite" : "Favorite"}
-                    onClick={() => toggleFav(e.character, !e.favorite)}
-                  >
-                    <Star
-                      className={cn(
-                        "h-4 w-4",
-                        e.favorite ? "fill-amber-400 text-amber-400" : "text-muted-foreground",
-                      )}
-                    />
-                  </button>
                 </div>
+              ))}
+            {filtered.length === 0 && (
+              <div className="col-span-full text-sm text-muted-foreground">
+                No characters yet. Roll some!
               </div>
-            ))}
-          {filtered.length === 0 && (
-            <div className="col-span-full text-sm text-muted-foreground">
-              No characters yet. Roll some!
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </Card>
     </div>

@@ -59,6 +59,21 @@ const TILES: Tile[] = [
   },
 ];
 
+const DEBRIS = [
+  { top: "8%", left: "12%", width: 10, height: 42, rotate: -18, hue: "24 88% 48%", delay: "-1.6s", duration: "18s" },
+  { top: "18%", left: "78%", width: 12, height: 32, rotate: 26, hue: "220 82% 24%", delay: "-4.3s", duration: "21s" },
+  { top: "30%", left: "6%", width: 8, height: 26, rotate: 42, hue: "36 92% 50%", delay: "-2.7s", duration: "17s" },
+  { top: "34%", left: "88%", width: 14, height: 38, rotate: -34, hue: "200 78% 46%", delay: "-7.1s", duration: "23s" },
+  { top: "47%", left: "18%", width: 9, height: 24, rotate: 12, hue: "272 52% 52%", delay: "-5.4s", duration: "16s" },
+  { top: "52%", left: "82%", width: 10, height: 34, rotate: -8, hue: "24 88% 48%", delay: "-2.2s", duration: "20s" },
+  { top: "64%", left: "8%", width: 12, height: 30, rotate: 28, hue: "220 82% 24%", delay: "-6.8s", duration: "19s" },
+  { top: "68%", left: "90%", width: 8, height: 20, rotate: -26, hue: "36 92% 50%", delay: "-3.3s", duration: "15s" },
+  { top: "78%", left: "28%", width: 11, height: 36, rotate: 35, hue: "200 78% 46%", delay: "-8.4s", duration: "22s" },
+  { top: "82%", left: "72%", width: 9, height: 28, rotate: -14, hue: "272 52% 52%", delay: "-1.1s", duration: "18.5s" },
+  { top: "12%", left: "54%", width: 6, height: 18, rotate: 18, hue: "24 88% 48%", delay: "-9.2s", duration: "14s" },
+  { top: "72%", left: "58%", width: 7, height: 22, rotate: -22, hue: "220 82% 24%", delay: "-4.9s", duration: "17.5s" },
+];
+
 /*
  * Picker sizing — the full atom is always visible. PICKER_SIZE is bounded by
  * 100dvh so the whole thing fits the Discord iframe without ever introducing
@@ -79,6 +94,27 @@ export function Home() {
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
       >
+        {DEBRIS.map((piece, index) => (
+          <span
+            key={`${piece.top}-${piece.left}-${index}`}
+            className="absolute rounded-sm border animate-debris-drift"
+            style={
+              {
+                top: piece.top,
+                left: piece.left,
+                width: `${piece.width}px`,
+                height: `${piece.height}px`,
+                "--debris-rotate": `${piece.rotate}deg`,
+                transform: `rotate(${piece.rotate}deg)`,
+                borderColor: `hsl(${piece.hue} / 0.28)`,
+                background: `linear-gradient(180deg, hsl(${piece.hue} / 0.24), transparent)`,
+                boxShadow: `0 0 18px hsl(${piece.hue} / 0.12)`,
+                animationDelay: piece.delay,
+                animationDuration: piece.duration,
+              } as React.CSSProperties
+            }
+          />
+        ))}
         <div className="absolute -top-40 -left-48 h-[760px] w-[760px] rounded-full bg-accent/10 blur-3xl animate-float" />
         <div
           className="absolute top-[42%] -right-56 h-[780px] w-[780px] rounded-full bg-primary/10 blur-3xl animate-float"

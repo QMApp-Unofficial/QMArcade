@@ -424,6 +424,12 @@
   100% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; }
 }
 
+@keyframes debris-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--debris-rotate, 0deg)); opacity: 0.22; }
+  35% { transform: translate3d(18px, -22px, 0) rotate(calc(var(--debris-rotate, 0deg) + 8deg)); opacity: 0.42; }
+  70% { transform: translate3d(-12px, 14px, 0) rotate(calc(var(--debris-rotate, 0deg) - 6deg)); opacity: 0.18; }
+}
+
 .animate-float { animation: float-up 5s var(--ease-in-out-quart) infinite; }
 .animate-fade-in-up { animation: fade-in-up 600ms var(--ease-out-quint) both; }
 .animate-rotate-slow { animation: rotate-slow 48s linear infinite; }
@@ -432,6 +438,7 @@
 .animate-nucleus-breathe { animation: nucleus-breathe 4.8s var(--ease-in-out-quart) infinite; }
 .animate-halo-pulse { animation: halo-pulse 3.8s var(--ease-out-quint) infinite; }
 .animate-ring-hue-drift { animation: ring-hue-drift 14s var(--ease-in-out-quart) infinite; }
+.animate-debris-drift { animation: debris-drift 18s var(--ease-in-out-quart) infinite; }
 
 .shake, .animate-shake { animation: shake 0.4s var(--ease-out-quint); }
 @keyframes shake {
@@ -471,3 +478,41 @@
 }
 .animate-min-atom-orbit { animation: min-atom-orbit 18s linear infinite; }
 .animate-min-nucleus-pulse { animation: min-nucleus-pulse 3.2s var(--ease-in-out-quart) infinite; }
+
+.activity-fullscreen.gacha-page:fullscreen,
+.activity-fullscreen.activity-fullscreen-fallback.gacha-page {
+  height: 100%;
+  overflow: hidden;
+}
+
+.activity-fullscreen:fullscreen .gacha-collection-card,
+.activity-fullscreen.activity-fullscreen-fallback .gacha-collection-card {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.activity-fullscreen:fullscreen .gacha-collection-scroll,
+.activity-fullscreen.activity-fullscreen-fallback .gacha-collection-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 0.25rem;
+}
+
+.activity-fullscreen:fullscreen .gacha-grid,
+.activity-fullscreen.activity-fullscreen-fallback .gacha-grid {
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  align-content: start;
+}
+
+.activity-fullscreen:fullscreen .gacha-reveal-card,
+.activity-fullscreen.activity-fullscreen-fallback .gacha-reveal-card {
+  height: 100%;
+}
+
+.activity-fullscreen:fullscreen .gacha-reveal-image,
+.activity-fullscreen.activity-fullscreen-fallback .gacha-reveal-image {
+  width: min(100%, 14rem);
+}
