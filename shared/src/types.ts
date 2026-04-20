@@ -76,12 +76,16 @@ export interface ScribbleRoomState {
   roomId: string;
   players: ScribblePlayer[];
   drawerId: string | null;
+  hostId: string | null;
   phase: "lobby" | "choosing" | "drawing" | "reveal" | "ended";
   wordChoices?: string[]; // only for drawer
   wordMasked?: string;
   wordRevealed?: string; // only during reveal
+  wordLength?: number; // length of the current word (everyone can see this)
   round: number;
   totalRounds: number;
+  maxPlayers: number;
+  customWords: string[];
   endsAt?: number;
 }
 
@@ -106,7 +110,7 @@ export interface ScribbleChatMessage {
   user: string;
   username: string;
   text: string;
-  kind: "chat" | "correct" | "system";
+  kind: "chat" | "correct" | "close" | "system";
   at: number;
 }
 

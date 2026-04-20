@@ -145,4 +145,52 @@ router.post("/clear/whiteboard", requireUser, requireAdmin, (_req, res) => {
   res.json({ ok: true });
 });
 
+/**
+ * Wipes every user's gacha progress — inventory, roll log, and currency
+ * wallet. The user rows themselves stay put so people don't have to log back
+ * in. Admin only; fronted by an "are you sure?" confirm modal in the client.
+ */
+router.post("/clear/gacha", requireUser, requireAdmin, (_req, res) => {
+  const tx = db.transaction(() => {
+    db.prepare("DELETE FROM gacha_inventory").run();
+    db.prepare("DELETE FROM gacha_rolls").run();
+    db.prepare("DELETE FROM gacha_wallet").run();
+  });
+  tx();
+  res.json({ ok: true });
+});
+
+/**
+ * Wipes every user's wordle progress — daily plays and lifetime stats.
+ * Admin only; daily word entries in `wordle_daily` are kept so today's
+ * puzzle stays consistent across a reset.
+ */
+router.post("/clear/wordle", requireUser, requireAdmin, (_req, res) => {
+  const tx = db.transaction(() => {
+    db.prepare("DELETE FROM wordle_plays").run();
+    db.prepare("DELETE FROM wordle_stats").run();
+  });
+  tx();
+  res.json({ ok: true });
+});
+
+/**
+ * Full arcade reset — whiteboard strokes, all wordle data, all gacha data,
+ * and scribble stats. User accounts and the active daily puzzle are kept.
+ * Admin only; must be confirmed twice in the UI to trigger.
+ */
+router.post("/clear/all", requireUser, requireAdmin, (_req, res) => {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE whiteboard_data SET strokes = '[]' WHERE id = 1").run();
+    db.prepare("DELETE FROM wordle_plays").run();
+    db.prepare("DELETE FROM wordle_stats").run();
+    db.prepare("DELETE FROM gacha_inventory").run();
+    db.prepare("DELETE FROM gacha_rolls").run();
+    db.prepare("DELETE FROM gacha_wallet").run();
+    db.prepare("DELETE FROM scribble_stats").run();
+  });
+  tx();
+  res.json({ ok: true });
+});
+
 export default router;

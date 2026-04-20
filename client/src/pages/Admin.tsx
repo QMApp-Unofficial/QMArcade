@@ -2,16 +2,69 @@ import { useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
-import { Download, Upload, ShieldAlert } from "lucide-react";
+import {
+  Download,
+  Upload,
+  ShieldAlert,
+  Eraser,
+  Sparkles,
+  Skull,
+  PenLine,
+} from "lucide-react";
+
+/**
+ * All destructive moderation actions funnel through a single ConfirmDialog
+ * instance. We keep a discriminated-union `pending` state so the dialog knows
+ * what to do on confirm — this avoids repeatedly rendering a dialog per
+ * button, and means the "are you sure?" copy stays consistent across every
+ * clear/reset.
+ */
+type PendingAction =
+  | { kind: "whiteboard" }
+  | { kind: "gacha" }
+  | { kind: "wordle" }
+  | { kind: "all" };
+
+const COPY: Record<
+  PendingAction["kind"],
+  { title: string; description: string; confirmLabel: string }
+> = {
+  whiteboard: {
+    title: "Clear the whiteboard?",
+    description:
+      "This wipes every stroke for everyone. The whiteboard can be redrawn — but what's there now is gone.",
+    confirmLabel: "Clear whiteboard",
+  },
+  gacha: {
+    title: "Clear everyone's gacha?",
+    description:
+      "Deletes every user's inventory, roll history, and currency wallet. User accounts stay. Rolls immediately refill.",
+    confirmLabel: "Clear gacha",
+  },
+  wordle: {
+    title: "Clear everyone's Wordle progress?",
+    description:
+      "Deletes today's plays and every user's lifetime stats (streak, wins, losses). Today's word stays the same.",
+    confirmLabel: "Clear Wordle",
+  },
+  all: {
+    title: "Reset the whole arcade?",
+    description:
+      "Wipes the whiteboard, every user's Wordle stats, every user's gacha, and all Scribble stats. User accounts are kept. There is no undo.",
+    confirmLabel: "Reset everything",
+  },
+};
 
 export function AdminPage() {
   const { user } = useAuth();
   const toast = useToast();
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState<PendingAction | null>(null);
 
   if (!user) return <Navigate to="/" replace />;
   if (!user.is_admin) {
@@ -65,18 +118,47 @@ export function AdminPage() {
     }
   }
 
-  async function clearWhiteboard() {
-    if (!confirm("Clear the whiteboard for everyone?")) return;
+  /**
+   * Maps each pending action to its server route so `doConfirm` stays small.
+   * Using a lookup instead of an if-chain makes it trivially auditable which
+   * admin button hits which endpoint.
+   */
+  const ENDPOINT: Record<PendingAction["kind"], string> = {
+    whiteboard: "/backup/clear/whiteboard",
+    gacha: "/backup/clear/gacha",
+    wordle: "/backup/clear/wordle",
+    all: "/backup/clear/all",
+  };
+
+  async function doConfirm() {
+    if (!pending) return;
     setBusy(true);
     try {
-      await api.post("/backup/clear/whiteboard");
-      toast.push({ title: "Whiteboard cleared", tone: "success" });
+      await api.post(ENDPOINT[pending.kind]);
+      toast.push({
+        title:
+          pending.kind === "all"
+            ? "Arcade reset"
+            : pending.kind === "whiteboard"
+              ? "Whiteboard cleared"
+              : pending.kind === "gacha"
+                ? "Gacha cleared"
+                : "Wordle cleared",
+        tone: "success",
+      });
+      setPending(null);
     } catch (e: any) {
-      toast.push({ title: "Failed", description: e?.message, tone: "error" });
+      toast.push({
+        title: "Action failed",
+        description: e?.message,
+        tone: "error",
+      });
     } finally {
       setBusy(false);
     }
   }
+
+  const pendingCopy = pending ? COPY[pending.kind] : null;
 
   return (
     <div className="grid gap-4">
@@ -116,11 +198,51 @@ export function AdminPage() {
       </Card>
 
       <Card>
-        <CardHeader title="Moderation" />
-        <Button variant="destructive" onClick={clearWhiteboard} disabled={busy}>
-          Clear whiteboard
-        </Button>
+        <CardHeader
+          title="Moderation"
+          description="Every destructive action asks for confirmation before it fires."
+        />
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Button
+            variant="destructive"
+            onClick={() => setPending({ kind: "whiteboard" })}
+            disabled={busy}
+          >
+            <Eraser className="h-4 w-4" /> Clear whiteboard
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => setPending({ kind: "gacha" })}
+            disabled={busy}
+          >
+            <Sparkles className="h-4 w-4" /> Clear everyone's gacha
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => setPending({ kind: "wordle" })}
+            disabled={busy}
+          >
+            <PenLine className="h-4 w-4" /> Clear everyone's Wordle
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => setPending({ kind: "all" })}
+            disabled={busy}
+          >
+            <Skull className="h-4 w-4" /> Reset everything
+          </Button>
+        </div>
       </Card>
+
+      <ConfirmDialog
+        open={pending !== null}
+        title={pendingCopy?.title ?? ""}
+        description={pendingCopy?.description}
+        confirmLabel={pendingCopy?.confirmLabel ?? "Confirm"}
+        onConfirm={doConfirm}
+        onCancel={() => setPending(null)}
+        busy={busy}
+      />
     </div>
   );
 }

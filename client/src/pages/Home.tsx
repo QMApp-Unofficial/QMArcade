@@ -32,7 +32,7 @@ const TILES: Tile[] = [
   {
     to: "/gacha",
     title: "Character Gacha",
-    description: "Roll Pokémon. 10 pulls every 4 hours.",
+    description: "Roll Pokémon. 3 pulls every 4 hours.",
     icon: Palette,
     hue: "8 78% 52%",
   },
@@ -60,24 +60,12 @@ const TILES: Tile[] = [
 ];
 
 /*
- * Picker sizing.
- *
- * User asked for the atom to show "only the top 3/4" so the crown logo reads
- * as the visible center of the screen and the bottom orbital tiles dip below
- * the fold. We do this by:
- *   1. Making the picker a *square* of PICKER_SIZE.
- *   2. Wrapping it in an overflow-hidden frame whose height is 78% of the
- *      picker so the bottom quarter is clipped.
- *   3. Absolute-positioning the square inside the frame aligned top, so the
- *      visible window captures the top three-quarters (including the nucleus,
- *      which sits at the square's geometric center).
- *
- * PICKER_SIZE is bounded by 100dvh so the whole thing fits the Discord iframe
- * without ever introducing scroll.
+ * Picker sizing — the full atom is always visible. PICKER_SIZE is bounded by
+ * 100dvh so the whole thing fits the Discord iframe without ever introducing
+ * scroll, and all five orbital tiles stay inside the viewport.
  */
 const PICKER_SIZE = "min(84vw, max(260px, 100dvh - 320px), 520px)";
 const RADIUS = `calc(${PICKER_SIZE} * 0.395)`;
-const VISIBLE_HEIGHT = `calc(${PICKER_SIZE} * 0.78)`;
 
 export function Home() {
   const { user } = useAuth();
@@ -138,36 +126,24 @@ export function Home() {
         </div>
       </motion.section>
 
-      {/* Top-3/4 crop wrapper. The full picker is square; visible region is 78%
-         of its height so the nucleus ends up near the vertical middle of the
-         remaining space, just as the attached mock shows. */}
       <motion.section
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-        className="relative w-full flex-1 min-h-0 flex items-start justify-center"
+        className="relative w-full flex-1 min-h-0 flex items-center justify-center"
         aria-label="Activity picker"
       >
         <div
           className="relative"
-          style={{
-            width: PICKER_SIZE,
-            height: VISIBLE_HEIGHT,
-            overflow: "hidden",
-          }}
+          style={{ width: PICKER_SIZE, height: PICKER_SIZE }}
         >
-          <div
-            className="absolute left-0 top-0"
-            style={{ width: PICKER_SIZE, height: PICKER_SIZE }}
-          >
-            <CircularPicker
-              hovered={hovered}
-              onHover={setHovered}
-              active={active}
-              onNucleusZap={() => setNucleusZap((n) => n + 1)}
-              zapKey={nucleusZap}
-            />
-          </div>
+          <CircularPicker
+            hovered={hovered}
+            onHover={setHovered}
+            active={active}
+            onNucleusZap={() => setNucleusZap((n) => n + 1)}
+            zapKey={nucleusZap}
+          />
         </div>
       </motion.section>
 

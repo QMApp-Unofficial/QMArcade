@@ -7,7 +7,7 @@ import { WORDLE } from "@qmul/shared";
 import type { LetterFeedback, WordleState, WordleStats } from "@qmul/shared";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { BarChart3, Share2, X } from "lucide-react";
+import { BarChart3, Copy, X } from "lucide-react";
 
 const KEYBOARD = [
   ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
@@ -187,8 +187,8 @@ export function WordlePage() {
               <BarChart3 className="h-4 w-4" strokeWidth={2.2} /> Stats
             </Button>
             {state.status !== "in_progress" && (
-              <Button variant="secondary" onClick={onShare} aria-label="Share result">
-                <Share2 className="h-4 w-4" strokeWidth={2.2} /> Share
+              <Button variant="secondary" onClick={onShare} aria-label="Copy result to clipboard">
+                <Copy className="h-4 w-4" strokeWidth={2.2} /> Copy result
               </Button>
             )}
           </div>
@@ -270,9 +270,11 @@ export function WordlePage() {
             </div>
           </div>
         ) : (
-          <pre className="shrink-0 mx-auto mt-3 font-mono text-xs bg-foreground/[0.03] rounded-lg p-3 border border-border leading-relaxed">
-{shareGrid}
-          </pre>
+          <div className="shrink-0 flex justify-center mt-3">
+            <Button onClick={onShare} aria-label="Copy result to clipboard">
+              <Copy className="h-4 w-4" strokeWidth={2.2} /> Copy result
+            </Button>
+          </div>
         )}
       </div>
 

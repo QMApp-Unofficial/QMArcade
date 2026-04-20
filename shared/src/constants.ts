@@ -4,7 +4,7 @@ export const WORDLE = {
 } as const;
 
 export const GACHA = {
-  ROLLS_PER_WINDOW: 10,
+  ROLLS_PER_WINDOW: 3,
   WINDOW_HOURS: 4,
   DUPLICATE_CURRENCY: {
     common: 5,

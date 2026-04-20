@@ -28,8 +28,15 @@ export const SCRIBBLE_WORDS = [
   "zebra", "zipper",
 ];
 
-export function drawWordChoices(count = 3): string[] {
-  const pool = [...SCRIBBLE_WORDS];
+/**
+ * Pick `count` distinct words. If `custom` is provided and non-empty, draw
+ * from it instead of the default pool — letting a host prepare an in-joke
+ * list for their group.
+ */
+export function drawWordChoices(count = 3, custom?: string[]): string[] {
+  const source =
+    custom && custom.length > 0 ? custom : SCRIBBLE_WORDS;
+  const pool = [...source];
   const picks: string[] = [];
   for (let i = 0; i < count && pool.length; i++) {
     const idx = Math.floor(Math.random() * pool.length);
