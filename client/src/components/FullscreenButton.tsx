@@ -4,6 +4,8 @@ import { Maximize2, Minimize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 
+const FALLBACK_CLASS = "activity-fullscreen-fallback";
+
 interface Props {
   targetRef: RefObject<HTMLElement>;
   label: string;
@@ -12,33 +14,67 @@ interface Props {
 
 export function FullscreenButton({ targetRef, label, className }: Props) {
   const [active, setActive] = useState(false);
-  const [supported, setSupported] = useState(false);
 
   useEffect(() => {
-    setSupported(Boolean(document.fullscreenEnabled));
-
     function onChange() {
-      setActive(document.fullscreenElement === targetRef.current);
+      const target = targetRef.current;
+      setActive(
+        document.fullscreenElement === target ||
+          Boolean(target?.classList.contains(FALLBACK_CLASS)),
+      );
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      targetRef.current?.classList.remove(FALLBACK_CLASS);
+      onChange();
     }
 
     document.addEventListener("fullscreenchange", onChange);
+    document.addEventListener("keydown", onKeyDown);
     onChange();
-    return () => document.removeEventListener("fullscreenchange", onChange);
+
+    return () => {
+      targetRef.current?.classList.remove(FALLBACK_CLASS);
+      document.removeEventListener("fullscreenchange", onChange);
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, [targetRef]);
 
   async function toggleFullscreen() {
     const target = targetRef.current;
-    if (!target || !document.fullscreenEnabled) return;
+    if (!target) return;
 
-    try {
-      if (document.fullscreenElement === target) {
+    if (document.fullscreenElement === target) {
+      try {
         await document.exitFullscreen();
-      } else {
-        await target.requestFullscreen();
+      } catch {
+        // Leave the UI usable even if the host blocks native fullscreen exit.
       }
-    } catch {
-      // Browser/Discord fullscreen permission failures should not break play.
+      setActive(false);
+      return;
     }
+
+    if (target.classList.contains(FALLBACK_CLASS)) {
+      target.classList.remove(FALLBACK_CLASS);
+      setActive(false);
+      return;
+    }
+
+    if (document.fullscreenEnabled && target.requestFullscreen) {
+      try {
+        await target.requestFullscreen();
+        if (document.fullscreenElement === target) {
+          setActive(true);
+          return;
+        }
+      } catch {
+        // Discord and other embeds can deny native fullscreen; fall back below.
+      }
+    }
+
+    target.classList.add(FALLBACK_CLASS);
+    setActive(true);
   }
 
   return (
@@ -47,7 +83,6 @@ export function FullscreenButton({ targetRef, label, className }: Props) {
       variant="ghost"
       className={cn("p-2 shrink-0", className)}
       onClick={toggleFullscreen}
-      disabled={!supported}
       aria-label={active ? `Exit fullscreen ${label}` : `Fullscreen ${label}`}
       title={active ? "Exit fullscreen" : "Fullscreen"}
     >

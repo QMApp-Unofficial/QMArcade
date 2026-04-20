@@ -250,20 +250,30 @@
   }
   .sidebar-link:active { transform: scale(0.98); }
 
-  .activity-fullscreen:fullscreen {
+  .activity-fullscreen:fullscreen,
+  .activity-fullscreen.activity-fullscreen-fallback {
     width: 100vw;
-    height: 100vh;
+    height: 100dvh;
     padding: 1rem;
     overflow: hidden;
     background: hsl(var(--background));
   }
 
+  .activity-fullscreen.activity-fullscreen-fallback {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+  }
+
   .activity-fullscreen:fullscreen > .card-elev,
+  .activity-fullscreen.activity-fullscreen-fallback > .card-elev,
+  .activity-fullscreen.activity-fullscreen-fallback > .activity-fullscreen-grid,
   .activity-fullscreen:fullscreen > .activity-fullscreen-grid {
     height: 100%;
   }
 
-  .activity-fullscreen-scroll:fullscreen {
+  .activity-fullscreen-scroll:fullscreen,
+  .activity-fullscreen-scroll.activity-fullscreen-fallback {
     overflow: auto;
   }
 
