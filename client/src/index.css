@@ -424,10 +424,19 @@
   100% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; }
 }
 
-@keyframes debris-drift {
-  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--debris-rotate, 0deg)); opacity: 0.22; }
-  35% { transform: translate3d(18px, -22px, 0) rotate(calc(var(--debris-rotate, 0deg) + 8deg)); opacity: 0.42; }
-  70% { transform: translate3d(-12px, 14px, 0) rotate(calc(var(--debris-rotate, 0deg) - 6deg)); opacity: 0.18; }
+@keyframes dust-drift {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(var(--dust-rotate, 0deg)) scale(1);
+    opacity: 0.18;
+  }
+  30% {
+    transform: translate3d(14px, -18px, 0) rotate(calc(var(--dust-rotate, 0deg) + 4deg)) scale(1.18);
+    opacity: 0.38;
+  }
+  65% {
+    transform: translate3d(-10px, 12px, 0) rotate(calc(var(--dust-rotate, 0deg) - 3deg)) scale(0.9);
+    opacity: 0.14;
+  }
 }
 
 .animate-float { animation: float-up 5s var(--ease-in-out-quart) infinite; }
@@ -438,7 +447,7 @@
 .animate-nucleus-breathe { animation: nucleus-breathe 4.8s var(--ease-in-out-quart) infinite; }
 .animate-halo-pulse { animation: halo-pulse 3.8s var(--ease-out-quint) infinite; }
 .animate-ring-hue-drift { animation: ring-hue-drift 14s var(--ease-in-out-quart) infinite; }
-.animate-debris-drift { animation: debris-drift 18s var(--ease-in-out-quart) infinite; }
+.animate-dust-drift { animation: dust-drift 20s var(--ease-in-out-quart) infinite; }
 
 .shake, .animate-shake { animation: shake 0.4s var(--ease-out-quint); }
 @keyframes shake {

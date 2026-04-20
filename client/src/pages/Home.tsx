@@ -59,19 +59,29 @@ const TILES: Tile[] = [
   },
 ];
 
-const DEBRIS = [
-  { top: "8%", left: "12%", width: 10, height: 42, rotate: -18, hue: "24 88% 48%", delay: "-1.6s", duration: "18s" },
-  { top: "18%", left: "78%", width: 12, height: 32, rotate: 26, hue: "220 82% 24%", delay: "-4.3s", duration: "21s" },
-  { top: "30%", left: "6%", width: 8, height: 26, rotate: 42, hue: "36 92% 50%", delay: "-2.7s", duration: "17s" },
-  { top: "34%", left: "88%", width: 14, height: 38, rotate: -34, hue: "200 78% 46%", delay: "-7.1s", duration: "23s" },
-  { top: "47%", left: "18%", width: 9, height: 24, rotate: 12, hue: "272 52% 52%", delay: "-5.4s", duration: "16s" },
-  { top: "52%", left: "82%", width: 10, height: 34, rotate: -8, hue: "24 88% 48%", delay: "-2.2s", duration: "20s" },
-  { top: "64%", left: "8%", width: 12, height: 30, rotate: 28, hue: "220 82% 24%", delay: "-6.8s", duration: "19s" },
-  { top: "68%", left: "90%", width: 8, height: 20, rotate: -26, hue: "36 92% 50%", delay: "-3.3s", duration: "15s" },
-  { top: "78%", left: "28%", width: 11, height: 36, rotate: 35, hue: "200 78% 46%", delay: "-8.4s", duration: "22s" },
-  { top: "82%", left: "72%", width: 9, height: 28, rotate: -14, hue: "272 52% 52%", delay: "-1.1s", duration: "18.5s" },
-  { top: "12%", left: "54%", width: 6, height: 18, rotate: 18, hue: "24 88% 48%", delay: "-9.2s", duration: "14s" },
-  { top: "72%", left: "58%", width: 7, height: 22, rotate: -22, hue: "220 82% 24%", delay: "-4.9s", duration: "17.5s" },
+const DUST = [
+  { top: "7%", left: "10%", width: 2, height: 2, rotate: 0, hue: "44 96% 78%", opacity: 0.24, blur: 0.4, delay: "-1.4s", duration: "20s" },
+  { top: "10%", left: "24%", width: 2, height: 6, rotate: 26, hue: "24 88% 70%", opacity: 0.18, blur: 0.8, delay: "-6.2s", duration: "26s" },
+  { top: "14%", left: "56%", width: 3, height: 3, rotate: 0, hue: "220 28% 82%", opacity: 0.18, blur: 0.6, delay: "-3.1s", duration: "18s" },
+  { top: "16%", left: "81%", width: 1, height: 5, rotate: -18, hue: "44 96% 80%", opacity: 0.22, blur: 1.1, delay: "-9.3s", duration: "24s" },
+  { top: "22%", left: "6%", width: 2, height: 2, rotate: 0, hue: "24 88% 70%", opacity: 0.16, blur: 0.7, delay: "-7.6s", duration: "22s" },
+  { top: "27%", left: "18%", width: 2, height: 8, rotate: 34, hue: "220 28% 82%", opacity: 0.16, blur: 1.2, delay: "-2.8s", duration: "28s" },
+  { top: "29%", left: "73%", width: 3, height: 3, rotate: 0, hue: "44 96% 78%", opacity: 0.2, blur: 0.5, delay: "-4.6s", duration: "17s" },
+  { top: "34%", left: "88%", width: 2, height: 7, rotate: -28, hue: "24 88% 70%", opacity: 0.14, blur: 1.4, delay: "-10.2s", duration: "23s" },
+  { top: "38%", left: "12%", width: 1, height: 4, rotate: 12, hue: "44 96% 80%", opacity: 0.17, blur: 0.9, delay: "-5.5s", duration: "19s" },
+  { top: "41%", left: "27%", width: 2, height: 2, rotate: 0, hue: "220 28% 82%", opacity: 0.14, blur: 0.4, delay: "-8.1s", duration: "21s" },
+  { top: "45%", left: "79%", width: 3, height: 9, rotate: 18, hue: "44 96% 78%", opacity: 0.16, blur: 1.5, delay: "-6.7s", duration: "27s" },
+  { top: "49%", left: "92%", width: 2, height: 2, rotate: 0, hue: "24 88% 70%", opacity: 0.18, blur: 0.5, delay: "-11.2s", duration: "18s" },
+  { top: "54%", left: "8%", width: 3, height: 3, rotate: 0, hue: "44 96% 80%", opacity: 0.2, blur: 0.6, delay: "-2.3s", duration: "16s" },
+  { top: "58%", left: "34%", width: 1, height: 6, rotate: -22, hue: "220 28% 82%", opacity: 0.15, blur: 1.2, delay: "-9.8s", duration: "24s" },
+  { top: "61%", left: "67%", width: 2, height: 2, rotate: 0, hue: "24 88% 70%", opacity: 0.16, blur: 0.7, delay: "-4.2s", duration: "20s" },
+  { top: "64%", left: "84%", width: 2, height: 7, rotate: 31, hue: "44 96% 78%", opacity: 0.14, blur: 1.3, delay: "-7.9s", duration: "29s" },
+  { top: "70%", left: "16%", width: 3, height: 3, rotate: 0, hue: "220 28% 82%", opacity: 0.13, blur: 0.5, delay: "-5.1s", duration: "19s" },
+  { top: "73%", left: "52%", width: 2, height: 8, rotate: 24, hue: "24 88% 70%", opacity: 0.17, blur: 1.1, delay: "-1.9s", duration: "25s" },
+  { top: "76%", left: "90%", width: 1, height: 4, rotate: -12, hue: "44 96% 80%", opacity: 0.18, blur: 0.8, delay: "-8.8s", duration: "18s" },
+  { top: "82%", left: "26%", width: 2, height: 2, rotate: 0, hue: "24 88% 70%", opacity: 0.15, blur: 0.4, delay: "-3.7s", duration: "17s" },
+  { top: "84%", left: "63%", width: 3, height: 10, rotate: -19, hue: "220 28% 82%", opacity: 0.13, blur: 1.5, delay: "-10.4s", duration: "28s" },
+  { top: "88%", left: "78%", width: 2, height: 2, rotate: 0, hue: "44 96% 78%", opacity: 0.2, blur: 0.5, delay: "-6.3s", duration: "22s" },
 ];
 
 /*
@@ -94,21 +104,21 @@ export function Home() {
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
       >
-        {DEBRIS.map((piece, index) => (
+        {DUST.map((piece, index) => (
           <span
             key={`${piece.top}-${piece.left}-${index}`}
-            className="absolute rounded-sm border animate-debris-drift"
+            className="absolute rounded-full animate-dust-drift"
             style={
               {
                 top: piece.top,
                 left: piece.left,
                 width: `${piece.width}px`,
                 height: `${piece.height}px`,
-                "--debris-rotate": `${piece.rotate}deg`,
+                "--dust-rotate": `${piece.rotate}deg`,
                 transform: `rotate(${piece.rotate}deg)`,
-                borderColor: `hsl(${piece.hue} / 0.28)`,
-                background: `linear-gradient(180deg, hsl(${piece.hue} / 0.24), transparent)`,
-                boxShadow: `0 0 18px hsl(${piece.hue} / 0.12)`,
+                background: `hsl(${piece.hue} / ${piece.opacity})`,
+                boxShadow: `0 0 ${Math.max(piece.blur * 10, 6)}px hsl(${piece.hue} / ${piece.opacity * 0.75})`,
+                filter: `blur(${piece.blur}px)`,
                 animationDelay: piece.delay,
                 animationDuration: piece.duration,
               } as React.CSSProperties
