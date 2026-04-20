@@ -1,7 +1,7 @@
 import type { GachaCharacter } from "@qmul/shared";
 
 function art(dex: number): string {
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${dex}.png`;
+  return `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/${dex}.png`;
 }
 
 function mk(dex: number, name: string, rarity: GachaCharacter["rarity"]): GachaCharacter {
