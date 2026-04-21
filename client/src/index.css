@@ -40,7 +40,7 @@
     --glow-primary: 220 82% 32%;
     --glow-accent: 24 92% 54%;
     --glow-warm: 44 96% 68%;
-    --discord-mobile-chrome-offset: 1.85rem;
+    --discord-mobile-chrome-offset: 2.7rem;
 
     --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
     --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
@@ -81,7 +81,7 @@
     --glow-primary: 36 92% 58%;
     --glow-accent: 220 60% 45%;
     --glow-warm: 18 84% 58%;
-    --discord-mobile-chrome-offset: 1.85rem;
+    --discord-mobile-chrome-offset: 2.7rem;
 
     color-scheme: dark;
   }
