@@ -291,7 +291,7 @@
   }
 
   .mobile-safe-top {
-    padding-top: calc(env(safe-area-inset-top) + 0.6rem);
+    padding-top: max(1.15rem, calc(env(safe-area-inset-top) + 1rem));
   }
 
   .mobile-safe-bottom {
@@ -300,7 +300,7 @@
 
   @media (min-width: 640px) {
     .mobile-safe-top {
-      padding-top: calc(env(safe-area-inset-top) + 0.2rem);
+      padding-top: max(0.4rem, calc(env(safe-area-inset-top) + 0.25rem));
     }
   }
 
