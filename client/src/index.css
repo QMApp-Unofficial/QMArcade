@@ -291,11 +291,17 @@
   }
 
   .mobile-safe-top {
-    padding-top: max(0px, env(safe-area-inset-top));
+    padding-top: calc(env(safe-area-inset-top) + 0.6rem);
   }
 
   .mobile-safe-bottom {
     padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+
+  @media (min-width: 640px) {
+    .mobile-safe-top {
+      padding-top: calc(env(safe-area-inset-top) + 0.2rem);
+    }
   }
 
   /* Rarity — full borders with color-matched wash */

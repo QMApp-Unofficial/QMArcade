@@ -343,7 +343,7 @@ function MobileBar({
 }) {
   return (
     <header className="lg:hidden sticky top-0 z-30 surface-glass border-b border-border mobile-safe-top">
-      <div className="container flex items-center gap-2 py-2 sm:py-2.5">
+      <div className="container flex items-center gap-2 py-1.5 sm:py-2.5">
         <NavLink
           to="/"
           className="flex items-center active:scale-[0.97] transition-transform duration-150 shrink-0 scale-[0.92] origin-left sm:scale-100"
@@ -408,7 +408,7 @@ function MobileBar({
 
       <nav
         aria-label="Primary mobile"
-        className="container overflow-x-auto pb-1.5 sm:pb-2 flex gap-1 no-scrollbar"
+        className="container overflow-x-auto pb-2 sm:pb-2 flex gap-1 no-scrollbar"
       >
         {NAV.map(({ to, label, icon: Icon }) => (
           <NavLink
