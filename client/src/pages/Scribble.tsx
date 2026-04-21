@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 import { AnimatePresence, motion } from "framer-motion";
 import { Card, CardHeader } from "@/components/ui/Card";
@@ -19,8 +19,8 @@ import type {
   ScribbleStroke,
 } from "@qmul/shared";
 import { SCRIBBLE } from "@qmul/shared";
-import { cn } from "@/lib/utils";
-import { Eraser, Link2, Pencil, Trash2, Users } from "lucide-react";
+import { cn, copyText } from "@/lib/utils";
+import { Eraser, Home, Link2, Pencil, Trash2, Trophy, Users } from "lucide-react";
 
 const COLORS = [
   "#111111", "#dc2626", "#ea580c", "#ca8a04", "#16a34a",
@@ -30,6 +30,7 @@ const COLORS = [
 export function ScribblePage() {
   const { user } = useAuth();
   const toast = useToast();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Pre-fill the room field from ?room=xxx so invite links just work. We keep
@@ -119,6 +120,12 @@ export function ScribblePage() {
     ? Math.max(0, Math.round((state.endsAt - now) / 1000))
     : null;
 
+  useEffect(() => {
+    if (state?.phase === "ended" && state.endsAt && now >= state.endsAt) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate, now, state?.endsAt, state?.phase]);
+
   function onStroke(s: StrokeShape) {
     if (!isDrawer) return;
     socketRef.current?.emit("sc:stroke", s);
@@ -143,22 +150,20 @@ export function ScribblePage() {
     setGuess("");
   }
 
-  function copyInvite() {
+  async function copyInvite() {
     const url = `${window.location.origin}/scribble?room=${encodeURIComponent(
       state?.roomId ?? roomId,
     )}`;
-    navigator.clipboard
-      .writeText(url)
-      .then(() =>
-        toast.push({
-          title: "Invite copied",
-          description: "Send the link to a friend to pull them into this room.",
-          tone: "success",
-        }),
-      )
-      .catch(() =>
-        toast.push({ title: "Could not copy link", tone: "error" }),
-      );
+    const copied = await copyText(url);
+    toast.push(
+      copied
+        ? {
+            title: "Invite copied",
+            description: "Send the link to a friend to pull them into this room.",
+            tone: "success",
+          }
+        : { title: "Could not copy link", tone: "error" },
+    );
   }
 
   if (!joined) {
@@ -227,84 +232,92 @@ export function ScribblePage() {
         {/* Word-slot display. Above the canvas, centred, monospace. Drawer
             sees the real word; everyone else sees underscores. During reveal
             we show the word so latecomers catch up. */}
-        <WordSlots state={state} isDrawer={isDrawer} />
-
-        <div className="relative flex-1 min-h-0">
-          <DrawingCanvas
-            ref={canvasRef}
-            readOnly={!isDrawer || state?.phase !== "drawing"}
-            color={erasing ? "#ffffff" : color}
-            size={size}
-            erasing={erasing}
-            onStrokeComplete={onStroke}
-            className="h-full min-h-0 aspect-auto"
-            aria-label={
-              isDrawer ? "Drawing canvas (you)" : "Drawing canvas (spectator)"
-            }
+        {state?.phase === "ended" ? (
+          <EndGamePanel
+            state={state}
+            secondsLeft={secondsLeft}
+            onBackToMain={() => navigate("/", { replace: true })}
           />
-          {!isDrawer && state?.phase === "drawing" && (
-            <span className="absolute top-2 left-2 chip">Spectating</span>
-          )}
+        ) : (
+          <>
+            <WordSlots state={state} isDrawer={isDrawer} />
 
-          {/* Word-picker overlay. Sits on top of the canvas with a grey wash
-              so the canvas is clearly disabled while a drawer chooses. */}
-          <AnimatePresence>
-            {state?.phase === "choosing" && (
-              <WordPickerOverlay
-                state={state}
-                isDrawer={isDrawer}
-                onPick={pickWord}
+            <div className="relative flex-1 min-h-0">
+              <DrawingCanvas
+                ref={canvasRef}
+                readOnly={!isDrawer || state?.phase !== "drawing"}
+                color={erasing ? "#ffffff" : color}
+                size={size}
+                erasing={erasing}
+                onStrokeComplete={onStroke}
+                className="h-full min-h-0 aspect-auto"
+                aria-label={
+                  isDrawer ? "Drawing canvas (you)" : "Drawing canvas (spectator)"
+                }
               />
-            )}
-          </AnimatePresence>
-        </div>
+              {!isDrawer && state?.phase === "drawing" && (
+                <span className="absolute top-2 left-2 chip">Spectating</span>
+              )}
 
-        <div className="mt-3 flex flex-wrap items-center gap-2 shrink-0">
-          <div className="flex gap-1" role="group" aria-label="colors">
-            {COLORS.map((c) => (
-              <button
-                key={c}
-                onClick={() => {
-                  setColor(c);
-                  setErasing(false);
-                }}
-                aria-label={`Color ${c}`}
-                className={cn(
-                  "h-6 w-6 rounded-full border",
-                  color === c && !erasing
-                    ? "border-foreground ring-2 ring-primary"
-                    : "border-border",
+              <AnimatePresence>
+                {state?.phase === "choosing" && (
+                  <WordPickerOverlay
+                    state={state}
+                    isDrawer={isDrawer}
+                    onPick={pickWord}
+                  />
                 )}
-                style={{ backgroundColor: c }}
+              </AnimatePresence>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2 shrink-0">
+              <div className="flex gap-1" role="group" aria-label="colors">
+                {COLORS.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => {
+                      setColor(c);
+                      setErasing(false);
+                    }}
+                    aria-label={`Color ${c}`}
+                    className={cn(
+                      "h-6 w-6 rounded-full border",
+                      color === c && !erasing
+                        ? "border-foreground ring-2 ring-primary"
+                        : "border-border",
+                    )}
+                    style={{ backgroundColor: c }}
+                    disabled={!isDrawer}
+                  />
+                ))}
+              </div>
+              <label className="flex items-center gap-2 text-xs">
+                <span>Size</span>
+                <input
+                  type="range"
+                  min={1}
+                  max={40}
+                  value={size}
+                  onChange={(e) => setSize(Number(e.target.value))}
+                  aria-label="Brush size"
+                  disabled={!isDrawer}
+                />
+                <span>{size}</span>
+              </label>
+              <Button
+                variant={erasing ? "primary" : "secondary"}
+                onClick={() => setErasing((e) => !e)}
                 disabled={!isDrawer}
-              />
-            ))}
-          </div>
-          <label className="flex items-center gap-2 text-xs">
-            <span>Size</span>
-            <input
-              type="range"
-              min={1}
-              max={40}
-              value={size}
-              onChange={(e) => setSize(Number(e.target.value))}
-              aria-label="Brush size"
-              disabled={!isDrawer}
-            />
-            <span>{size}</span>
-          </label>
-          <Button
-            variant={erasing ? "primary" : "secondary"}
-            onClick={() => setErasing((e) => !e)}
-            disabled={!isDrawer}
-          >
-            {erasing ? <Pencil className="h-4 w-4" /> : <Eraser className="h-4 w-4" />}
-            {erasing ? "Draw" : "Erase"}
-          </Button>
-          <Button variant="ghost" onClick={clearCanvas} disabled={!isDrawer}>
-            <Trash2 className="h-4 w-4" /> Clear
-          </Button>
-        </div>
+              >
+                {erasing ? <Pencil className="h-4 w-4" /> : <Eraser className="h-4 w-4" />}
+                {erasing ? "Draw" : "Erase"}
+              </Button>
+              <Button variant="ghost" onClick={clearCanvas} disabled={!isDrawer}>
+                <Trash2 className="h-4 w-4" /> Clear
+              </Button>
+            </div>
+          </>
+        )}
       </Card>
 
       <div className="min-h-0 flex flex-col gap-3 overflow-hidden">
@@ -388,6 +401,95 @@ export function ScribblePage() {
           </form>
         </Card>
       </div>
+      </div>
+    </div>
+  );
+}
+
+function EndGamePanel({
+  state,
+  secondsLeft,
+  onBackToMain,
+}: {
+  state: ScribbleRoomState;
+  secondsLeft: number | null;
+  onBackToMain: () => void;
+}) {
+  const podium = [...state.players]
+    .sort((a, b) => b.score - a.score || a.username.localeCompare(b.username))
+    .slice(0, 3);
+  const slots = [podium[1], podium[0], podium[2]];
+  const labels = ["2nd", "1st", "3rd"];
+  const heights = ["h-28", "h-40", "h-24"];
+
+  return (
+    <div className="flex flex-1 min-h-0 flex-col items-center justify-center px-2 py-4 text-center">
+      <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+        <Trophy className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
+        <span>Final standings</span>
+      </div>
+      <h3 className="font-display text-2xl font-bold">
+        {state.wordRevealed ? `The word was ${state.wordRevealed}` : "Game over"}
+      </h3>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Heading back to the main menu in {secondsLeft ?? SCRIBBLE.END_SECONDS}s.
+      </p>
+
+      <div className="mt-8 flex w-full max-w-3xl items-end justify-center gap-3 sm:gap-5">
+        {slots.map((player, index) => (
+          <div key={labels[index]} className="flex w-[30%] max-w-[10rem] flex-col items-center">
+            <div className="mb-3 flex min-h-[7rem] flex-col items-center justify-end">
+              {player ? (
+                <>
+                  {player.avatar ? (
+                    <img
+                      src={player.avatar}
+                      alt={player.username}
+                      className={cn(
+                        "rounded-full border-4 border-card object-cover shadow-lg",
+                        index === 1 ? "h-20 w-20" : "h-16 w-16",
+                      )}
+                    />
+                  ) : (
+                    <div
+                      className={cn(
+                        "grid rounded-full border-4 border-card bg-foreground/10 text-sm font-semibold shadow-lg",
+                        index === 1 ? "h-20 w-20" : "h-16 w-16",
+                      )}
+                    >
+                      <span className="m-auto">{player.username.slice(0, 2).toUpperCase()}</span>
+                    </div>
+                  )}
+                  <span className="mt-3 max-w-full truncate text-sm font-semibold">
+                    {player.username}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{player.score} pts</span>
+                </>
+              ) : (
+                <div className="h-[7rem]" />
+              )}
+            </div>
+            <div
+              className={cn(
+                "flex w-full flex-col items-center justify-center rounded-t-xl border border-border bg-foreground/[0.05] px-2",
+                heights[index],
+              )}
+            >
+              <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                {labels[index]}
+              </span>
+              <span className="mt-1 font-display text-3xl font-bold text-foreground">
+                {index === 1 ? "1" : index === 0 ? "2" : "3"}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-8">
+        <Button onClick={onBackToMain}>
+          <Home className="h-4 w-4" /> Back to main menu
+        </Button>
       </div>
     </div>
   );

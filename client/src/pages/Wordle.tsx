@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import { WORDLE } from "@qmul/shared";
 import type { LetterFeedback, WordleState, WordleStats } from "@qmul/shared";
-import { cn } from "@/lib/utils";
+import { cn, copyText } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { BarChart3, Copy, X } from "lucide-react";
 
@@ -141,14 +141,13 @@ export function WordlePage() {
     return `QM⁻ Wordle ${state.date} ${score}\n${rows}`;
   }, [state]);
 
-  function onShare() {
+  async function onShare() {
     if (!state || state.status === "in_progress") return;
-    navigator.clipboard
-      .writeText(shareGrid)
-      .then(() =>
-        toast.push({ title: "Copied to clipboard", tone: "success" }),
-      )
-      .catch(() => toast.push({ title: "Could not copy", tone: "error" }));
+    const copied = await copyText(shareGrid);
+    toast.push({
+      title: copied ? "Copied to clipboard" : "Could not copy",
+      tone: copied ? "success" : "error",
+    });
   }
 
   if (!state) {

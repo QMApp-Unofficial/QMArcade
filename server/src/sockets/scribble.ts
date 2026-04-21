@@ -177,7 +177,10 @@ function publicState(room: Room, forSocketId?: string): ScribbleRoomState {
         : undefined,
     wordLength:
       room.phase === "drawing" && room.word ? room.word.length : undefined,
-    wordRevealed: room.phase === "reveal" ? room.word || undefined : undefined,
+    wordRevealed:
+      room.phase === "reveal" || room.phase === "ended"
+        ? room.word || undefined
+        : undefined,
     round: room.round,
     totalRounds: room.totalRounds,
     maxPlayers: room.maxPlayers,
@@ -203,6 +206,7 @@ function clearTimer(room: Room) {
 function endGame(io: Server, room: Room) {
   clearTimer(room);
   room.phase = "ended";
+  room.endsAt = Date.now() + SCRIBBLE.END_SECONDS * 1000;
   // Persist stats
   const sorted = [...room.players.values()].sort((a, b) => b.score - a.score);
   sorted.forEach((p, i) => {
@@ -213,10 +217,26 @@ function endGame(io: Server, room: Room) {
        ON CONFLICT(discord_id) DO UPDATE SET
          wins = wins + excluded.wins,
          total_score = total_score + excluded.total_score,
-         games = games + 1`,
+       games = games + 1`,
     ).run(p.discord_id, isWin ? 1 : 0, p.score);
   });
   broadcastState(io, room);
+  room.timer = setTimeout(() => {
+    clearTimer(room);
+    room.phase = "lobby";
+    room.drawerSocketId = null;
+    room.word = null;
+    room.wordChoices = [];
+    room.hintIndexes = [];
+    room.roundStartedAt = null;
+    room.strokes = [];
+    room.turnIndex = 0;
+    room.order = [...room.players.keys()];
+    for (const player of room.players.values()) {
+      player.guessedThisRound = false;
+    }
+    broadcastState(io, room);
+  }, SCRIBBLE.END_SECONDS * 1000);
 }
 
 function beginTurn(io: Server, room: Room) {
