@@ -21,6 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
+import { isInsideDiscord } from "@/lib/discord";
 import { useToast } from "./ui/Toast";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
@@ -92,17 +93,37 @@ export function Layout() {
   );
 }
 
-function BrandMark({ variant = "horizontal" }: { variant?: "horizontal" | "stacked" }) {
+function BrandMark({
+  variant = "horizontal",
+  size = "default",
+}: {
+  variant?: "horizontal" | "stacked";
+  size?: "default" | "mobile";
+}) {
+  const mobileHorizontal = variant === "horizontal" && size === "mobile";
+
   return (
-    <div className={cn("flex", variant === "stacked" ? "flex-col items-start gap-1" : "items-center gap-2.5")}>
-      <div className="flex items-center gap-2.5 min-w-0">
+    <div
+      className={cn(
+        "flex",
+        variant === "stacked"
+          ? "flex-col items-start gap-1"
+          : mobileHorizontal
+            ? "items-center gap-3"
+            : "items-center gap-2.5",
+      )}
+    >
+      <div className={cn("flex items-center min-w-0", mobileHorizontal ? "gap-3" : "gap-2.5")}>
         <img
           src="/qmul-logo.png"
           alt="QM minus"
-          className="h-9 w-9 rounded-full shrink-0"
+          className={cn("rounded-full shrink-0", mobileHorizontal ? "h-12 w-12" : "h-9 w-9")}
         />
         <span
-          className="font-display text-lg md:text-xl font-extrabold tracking-[-0.01em] flex items-baseline"
+          className={cn(
+            "font-display font-extrabold tracking-[-0.01em] flex items-baseline",
+            mobileHorizontal ? "text-[1.45rem]" : "text-lg md:text-xl",
+          )}
           style={{ fontVariationSettings: '"wdth" 85' }}
           aria-label={APP.LONG_NAME}
         >
@@ -341,16 +362,23 @@ function MobileBar({
   onOpenAdmin: () => void;
   onLogout: () => Promise<void>;
 }) {
+  const insideDiscord = isInsideDiscord();
+
   return (
-    <header className="lg:hidden sticky top-0 z-30 surface-glass border-b border-border mobile-safe-top">
+    <header
+      className={cn(
+        "lg:hidden sticky top-0 z-30 surface-glass border-b border-border mobile-safe-top",
+        insideDiscord && "mobile-discord-offset",
+      )}
+    >
       <div className="container flex items-center gap-2 py-1.5 sm:py-2.5">
         <NavLink
           to="/"
-          className="flex items-center active:scale-[0.97] transition-transform duration-150 shrink-0 scale-[0.92] origin-left sm:scale-100"
+          className="flex items-center active:scale-[0.97] transition-transform duration-150 shrink-0"
           style={{ transitionTimingFunction: "var(--ease-out-quint)" }}
           aria-label="Home"
         >
-          <BrandMark />
+          <BrandMark size="mobile" />
         </NavLink>
 
         <div className="ml-auto flex items-center gap-1">

@@ -40,6 +40,7 @@
     --glow-primary: 220 82% 32%;
     --glow-accent: 24 92% 54%;
     --glow-warm: 44 96% 68%;
+    --discord-mobile-chrome-offset: 1.85rem;
 
     --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
     --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
@@ -80,6 +81,7 @@
     --glow-primary: 36 92% 58%;
     --glow-accent: 220 60% 45%;
     --glow-warm: 18 84% 58%;
+    --discord-mobile-chrome-offset: 1.85rem;
 
     color-scheme: dark;
   }
@@ -291,7 +293,12 @@
   }
 
   .mobile-safe-top {
-    padding-top: max(1.15rem, calc(env(safe-area-inset-top) + 1rem));
+    padding-top: max(0.35rem, calc(env(safe-area-inset-top) + 0.2rem));
+  }
+
+  .mobile-discord-offset {
+    margin-top: var(--discord-mobile-chrome-offset);
+    top: var(--discord-mobile-chrome-offset);
   }
 
   .mobile-safe-bottom {
@@ -300,7 +307,12 @@
 
   @media (min-width: 640px) {
     .mobile-safe-top {
-      padding-top: max(0.4rem, calc(env(safe-area-inset-top) + 0.25rem));
+      padding-top: max(0.25rem, calc(env(safe-area-inset-top) + 0.15rem));
+    }
+
+    .mobile-discord-offset {
+      margin-top: 0;
+      top: 0;
     }
   }
 
