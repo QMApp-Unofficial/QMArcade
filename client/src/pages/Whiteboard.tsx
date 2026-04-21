@@ -75,7 +75,7 @@ export function WhiteboardPage() {
           title="Persistent Whiteboard"
           description="Draw together. It saves itself."
           right={
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <FullscreenButton targetRef={activityRef} label="whiteboard" />
               {user?.is_admin ? (
                 <Button variant="destructive" onClick={clearAll}>
@@ -97,7 +97,7 @@ export function WhiteboardPage() {
           />
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2 shrink-0">
-          <div className="flex gap-1" role="group" aria-label="colors">
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label="colors">
             {COLORS.map((c) => (
               <button
                 key={c}
@@ -107,14 +107,14 @@ export function WhiteboardPage() {
                 }}
                 aria-label={`Color ${c}`}
                 className={cn(
-                  "h-6 w-6 rounded-full border",
+                  "h-6 w-6 rounded-full border sm:h-7 sm:w-7",
                   color === c && !erasing ? "border-foreground ring-2 ring-primary" : "border-border",
                 )}
                 style={{ backgroundColor: c }}
               />
             ))}
           </div>
-          <label className="flex items-center gap-2 text-xs">
+          <label className="flex items-center gap-2 text-xs whitespace-nowrap">
             <span>Size</span>
             <input
               type="range"
@@ -123,12 +123,14 @@ export function WhiteboardPage() {
               value={size}
               onChange={(e) => setSize(Number(e.target.value))}
               aria-label="Brush size"
+              className="w-24 sm:w-32"
             />
             <span>{size}</span>
           </label>
           <Button
             variant={erasing ? "primary" : "secondary"}
             onClick={() => setErasing((e) => !e)}
+            className="ml-auto sm:ml-0"
           >
             {erasing ? <Pencil className="h-4 w-4" /> : <Eraser className="h-4 w-4" />}
             {erasing ? "Draw" : "Erase"}

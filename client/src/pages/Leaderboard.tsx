@@ -31,61 +31,109 @@ export function LeaderboardPage() {
             </div>
           }
         />
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm" aria-label="Leaderboard">
-            <thead>
-              <tr className="text-muted-foreground text-[10px] uppercase tracking-[0.18em] text-left">
-                <th className="py-2 pr-3 font-semibold">#</th>
-                <th className="font-semibold">Player</th>
-                <th className="text-right font-semibold tabular-nums">Streak</th>
-                <th className="text-right font-semibold tabular-nums">Wins</th>
-                <th className="text-right font-semibold tabular-nums">Collected</th>
-                <th className="text-right font-semibold tabular-nums">Scribble</th>
-              </tr>
-            </thead>
-            <tbody className="stagger">
+        {rows.length === 0 ? (
+          <div className="py-8 text-center text-sm text-muted-foreground">
+            No plays yet. Be the first!
+          </div>
+        ) : (
+          <>
+            <div className="grid gap-3 sm:hidden">
               {rows.map((r, i) => {
                 const m = medal(i);
                 return (
-                  <tr key={r.discord_id} className="border-t border-border hover:bg-foreground/[0.025] transition-colors">
-                    <td className="py-2.5 w-10">
+                  <div
+                    key={r.discord_id}
+                    className="rounded-xl border border-border bg-foreground/[0.03] p-3"
+                  >
+                    <div className="flex items-center gap-3">
                       <span
-                        className="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold tabular-nums"
-                        style={m ? { background: m, color: "hsl(220 50% 10%)" } : { color: "hsl(var(--muted-foreground))" }}
+                        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold tabular-nums"
+                        style={m ? { background: m, color: "hsl(220 50% 10%)" } : { color: "hsl(var(--muted-foreground))", background: "hsl(var(--foreground) / 0.05)" }}
                       >
                         {i + 1}
                       </span>
-                    </td>
-                    <td className="py-2.5">
-                      <div className="flex items-center gap-2">
-                        {r.avatar && (
-                          <img
-                            src={r.avatar}
-                            alt=""
-                            className="h-7 w-7 rounded-full border border-border"
-                          />
-                        )}
-                        <span className="font-semibold">{r.username}</span>
+                      {r.avatar && (
+                        <img
+                          src={r.avatar}
+                          alt=""
+                          className="h-10 w-10 rounded-full border border-border"
+                        />
+                      )}
+                      <div className="min-w-0">
+                        <div className="font-semibold break-words">{r.username}</div>
+                        <div className="text-[11px] text-muted-foreground">Rank #{i + 1}</div>
                       </div>
-                    </td>
-                    <td className="text-right font-semibold tabular-nums">{r.wordle_best_streak}</td>
-                    <td className="text-right tabular-nums">{r.wordle_wins}</td>
-                    <td className="text-right tabular-nums">{r.gacha_count}</td>
-                    <td className="text-right tabular-nums">{r.scribble_score}</td>
-                  </tr>
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      <StatPill label="Streak" value={r.wordle_best_streak} />
+                      <StatPill label="Wins" value={r.wordle_wins} />
+                      <StatPill label="Collected" value={r.gacha_count} />
+                      <StatPill label="Scribble" value={r.scribble_score} />
+                    </div>
+                  </div>
                 );
               })}
-              {rows.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="text-center text-muted-foreground py-8">
-                    No plays yet. Be the first!
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            </div>
+
+            <div className="hidden overflow-x-auto sm:block">
+              <table className="min-w-[40rem] w-full text-sm" aria-label="Leaderboard">
+                <thead>
+                  <tr className="text-muted-foreground text-[10px] uppercase tracking-[0.18em] text-left">
+                    <th className="py-2 pr-3 font-semibold">#</th>
+                    <th className="font-semibold">Player</th>
+                    <th className="text-right font-semibold tabular-nums">Streak</th>
+                    <th className="text-right font-semibold tabular-nums">Wins</th>
+                    <th className="text-right font-semibold tabular-nums">Collected</th>
+                    <th className="text-right font-semibold tabular-nums">Scribble</th>
+                  </tr>
+                </thead>
+                <tbody className="stagger">
+                  {rows.map((r, i) => {
+                    const m = medal(i);
+                    return (
+                      <tr key={r.discord_id} className="border-t border-border hover:bg-foreground/[0.025] transition-colors">
+                        <td className="py-2.5 w-10">
+                          <span
+                            className="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold tabular-nums"
+                            style={m ? { background: m, color: "hsl(220 50% 10%)" } : { color: "hsl(var(--muted-foreground))" }}
+                          >
+                            {i + 1}
+                          </span>
+                        </td>
+                        <td className="py-2.5">
+                          <div className="flex items-center gap-2">
+                            {r.avatar && (
+                              <img
+                                src={r.avatar}
+                                alt=""
+                                className="h-7 w-7 rounded-full border border-border"
+                              />
+                            )}
+                            <span className="font-semibold">{r.username}</span>
+                          </div>
+                        </td>
+                        <td className="text-right font-semibold tabular-nums">{r.wordle_best_streak}</td>
+                        <td className="text-right tabular-nums">{r.wordle_wins}</td>
+                        <td className="text-right tabular-nums">{r.gacha_count}</td>
+                        <td className="text-right tabular-nums">{r.scribble_score}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </Card>
+    </div>
+  );
+}
+
+function StatPill({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-lg border border-border bg-foreground/[0.04] px-3 py-2">
+      <div className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
+      <div className="mt-1 text-sm font-semibold tabular-nums">{value}</div>
     </div>
   );
 }

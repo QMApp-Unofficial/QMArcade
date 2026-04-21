@@ -164,7 +164,7 @@ export function WordlePage() {
   return (
     <div ref={activityRef} className="activity-fullscreen flex-1 min-h-0 flex flex-col items-center w-full">
       <div className="w-full max-w-xl flex-1 min-h-0 flex flex-col">
-        <div className="flex items-end justify-between gap-2 mb-3 shrink-0">
+        <div className="mb-3 flex shrink-0 flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
@@ -179,17 +179,23 @@ export function WordlePage() {
               Wordle
             </h3>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
             <FullscreenButton targetRef={activityRef} label="wordle" />
             <Button
               variant="secondary"
               onClick={() => setStatsOpen(true)}
               aria-label="Open stats"
+              className="flex-1 sm:flex-none"
             >
               <BarChart3 className="h-4 w-4" strokeWidth={2.2} /> Stats
             </Button>
             {state.status !== "in_progress" && (
-              <Button variant="secondary" onClick={onShare} aria-label="Copy results to clipboard">
+              <Button
+                variant="secondary"
+                onClick={onShare}
+                aria-label="Copy results to clipboard"
+                className="flex-1 sm:flex-none"
+              >
                 <Copy className="h-4 w-4" strokeWidth={2.2} /> Copy results
               </Button>
             )}
@@ -199,7 +205,7 @@ export function WordlePage() {
         <div className="flex-1 min-h-0 flex items-center justify-center">
           <div
             className={cn(
-              "wordle-board flex flex-col gap-1.5",
+              "wordle-board flex flex-col gap-1 sm:gap-1.5",
               shake && "animate-shake",
             )}
             role="grid"
@@ -247,7 +253,7 @@ export function WordlePage() {
           >
             <div className="flex flex-col gap-1.5">
               {KEYBOARD.map((row, i) => (
-                <div key={i} className="flex justify-center gap-1.5">
+                <div key={i} className="flex justify-center gap-1 sm:gap-1.5">
                   {row.map((k) => {
                     const low = k.toLowerCase();
                     const kind = keyMap[low];
@@ -273,7 +279,11 @@ export function WordlePage() {
           </div>
         ) : (
           <div className="shrink-0 flex justify-center mt-3">
-            <Button onClick={onShare} aria-label="Copy results to clipboard">
+            <Button
+              onClick={onShare}
+              aria-label="Copy results to clipboard"
+              className="w-full sm:w-auto"
+            >
               <Copy className="h-4 w-4" strokeWidth={2.2} /> Copy results
             </Button>
           </div>

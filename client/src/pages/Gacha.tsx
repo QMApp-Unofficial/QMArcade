@@ -150,16 +150,16 @@ export function GachaPage() {
               </div>
             }
           />
-          <div className="flex flex-col sm:flex-row items-center gap-6">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
             <Button
               onClick={roll}
               disabled={!status || status.rollsRemaining <= 0 || rolling}
-              className="sm:self-start"
+              className="w-full sm:w-auto sm:self-start"
             >
               <Sparkles className="h-4 w-4" />
               Roll
             </Button>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs leading-relaxed text-muted-foreground">
               Weights: common {GACHA.RARITY_WEIGHTS.common}%, rare {GACHA.RARITY_WEIGHTS.rare}%, epic {GACHA.RARITY_WEIGHTS.epic}%, legendary {GACHA.RARITY_WEIGHTS.legendary}%.
             </p>
           </div>
@@ -176,7 +176,7 @@ export function GachaPage() {
               aria-live="polite"
               aria-label={`Rolled ${reveal.character.name}`}
             >
-              <Card className={cn("gacha-reveal-card grid gap-5 items-center sm:grid-cols-[160px_1fr]", RARITY_CLASS[reveal.character.rarity])}>
+              <Card className={cn("gacha-reveal-card grid gap-4 sm:gap-5 items-center sm:grid-cols-[160px_1fr]", RARITY_CLASS[reveal.character.rarity])}>
                 <motion.img
                   initial={{ rotateY: 90, opacity: 0 }}
                   animate={{ rotateY: 0, opacity: 1 }}
@@ -184,7 +184,7 @@ export function GachaPage() {
                   src={reveal.character.image}
                   alt={reveal.character.name}
                   loading="eager"
-                  className="gacha-reveal-image w-40 aspect-square rounded-xl bg-foreground/5 object-contain"
+                  className="gacha-reveal-image mx-auto w-32 sm:w-40 aspect-square rounded-xl bg-foreground/5 object-contain"
                 />
                 <div>
                   <div className="chip mb-2" style={{ color: GACHA.RARITY_COLORS[reveal.character.rarity] }}>
@@ -199,11 +199,11 @@ export function GachaPage() {
                       ? "New to your collection!"
                       : `Duplicate · owned ×${reveal.count} · +${reveal.currencyAwarded} currency`}
                   </p>
-                  <div className="mt-3 flex gap-2">
-                    <Button variant="secondary" onClick={() => setReveal(null)}>
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                    <Button variant="secondary" onClick={() => setReveal(null)} className="w-full sm:w-auto">
                       Close
                     </Button>
-                    <Button onClick={roll} disabled={!status || status.rollsRemaining <= 0 || rolling}>
+                    <Button onClick={roll} disabled={!status || status.rollsRemaining <= 0 || rolling} className="w-full sm:w-auto">
                       Roll again
                     </Button>
                   </div>
@@ -219,7 +219,7 @@ export function GachaPage() {
           title={`Your collection (${inventory.length}/${totalRoster})`}
           description="Favorites appear first. Click the star to toggle."
           right={
-            <div className="flex gap-1 text-xs flex-wrap">
+            <div className="flex flex-wrap gap-1.5 text-[11px] sm:text-xs">
               {(["all", "common", "rare", "epic", "legendary"] as const).map((f) => (
                 <button
                   key={f}
@@ -230,14 +230,14 @@ export function GachaPage() {
                   onClick={() => setFilter(f)}
                   aria-pressed={filter === f}
                 >
-                  {f}
+                  <span className="capitalize">{f}</span>
                 </button>
               ))}
             </div>
           }
         />
         <div className="gacha-collection-scroll">
-          <div className="gacha-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="gacha-grid grid grid-cols-1 min-[360px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {filtered
               .slice()
               .sort((a, b) => Number(b.favorite) - Number(a.favorite))
@@ -257,7 +257,7 @@ export function GachaPage() {
                   />
                   <div className="mt-2 flex items-center justify-between">
                     <div>
-                      <div className="text-sm font-semibold leading-none">{e.character.name}</div>
+                      <div className="text-sm font-semibold leading-tight break-words">{e.character.name}</div>
                       <div
                         className="text-[10px] uppercase tracking-wide mt-1"
                         style={{ color: GACHA.RARITY_COLORS[e.character.rarity] }}

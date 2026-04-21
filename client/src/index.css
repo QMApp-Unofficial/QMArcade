@@ -93,14 +93,22 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "ss01", "ss02", "cv11";
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
     background-image:
       radial-gradient(1200px 600px at 8% -10%, hsl(var(--glow-primary) / 0.18), transparent 55%),
       radial-gradient(900px 500px at 108% 8%, hsl(var(--glow-accent) / 0.18), transparent 58%),
       radial-gradient(700px 400px at 60% 120%, hsl(var(--glow-warm) / 0.14), transparent 60%),
       radial-gradient(circle at 0 0, hsl(var(--border) / 0.4) 1px, transparent 1px);
     background-size: auto, auto, auto, 28px 28px;
-    background-attachment: fixed;
+    background-attachment: scroll;
     transition: background-color 0.3s var(--ease-out-quint);
+  }
+
+  @media (min-width: 768px) {
+    body {
+      background-attachment: fixed;
+    }
   }
 
   *:focus-visible {
@@ -164,6 +172,7 @@
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium
            focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none
            disabled:opacity-50 disabled:pointer-events-none select-none;
+    touch-action: manipulation;
     transition: background-color 180ms var(--ease-out-quint),
                 color 180ms var(--ease-out-quint),
                 border-color 180ms var(--ease-out-quint),
@@ -216,7 +225,7 @@
   .btn-accent:hover { filter: brightness(1.06); }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium uppercase tracking-wider;
+    @apply inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] sm:px-2.5 sm:py-1 sm:text-xs font-medium uppercase tracking-[0.12em] sm:tracking-[0.16em];
     background: hsl(var(--foreground) / 0.05);
     border: 1px solid hsl(var(--border));
     color: hsl(var(--muted-foreground));
@@ -224,7 +233,7 @@
   }
 
   .card-elev {
-    @apply surface rounded-2xl p-5;
+    @apply surface rounded-xl sm:rounded-2xl p-4 sm:p-5;
   }
 
   .rule {
@@ -254,7 +263,11 @@
   .activity-fullscreen.activity-fullscreen-fallback {
     width: 100vw;
     height: 100dvh;
-    padding: 1rem;
+    padding:
+      max(0.75rem, env(safe-area-inset-top))
+      max(0.75rem, env(safe-area-inset-right))
+      max(0.75rem, env(safe-area-inset-bottom))
+      max(0.75rem, env(safe-area-inset-left));
     overflow: hidden;
     background: hsl(var(--background));
   }
@@ -275,6 +288,14 @@
   .activity-fullscreen-scroll:fullscreen,
   .activity-fullscreen-scroll.activity-fullscreen-fallback {
     overflow: auto;
+  }
+
+  .mobile-safe-top {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+
+  .mobile-safe-bottom {
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
   }
 
   /* Rarity — full borders with color-matched wash */
@@ -356,6 +377,7 @@
   padding: 0 0.45rem;
   font-size: 0.85rem;
   letter-spacing: 0.04em;
+  touch-action: manipulation;
   transition: background-color 140ms var(--ease-out-quint),
               transform 120ms var(--ease-out-quint),
               color 140ms var(--ease-out-quint);
@@ -524,4 +546,30 @@
 .activity-fullscreen:fullscreen .gacha-reveal-image,
 .activity-fullscreen.activity-fullscreen-fallback .gacha-reveal-image {
   width: min(100%, 14rem);
+}
+
+@media (max-width: 420px) {
+  .wordle-board {
+    --tile-gap: 0.25rem;
+    --tile-size: max(
+      1.35rem,
+      min(
+        calc((100vw - 1.5rem) / 5 - var(--tile-gap)),
+        calc((100dvh - 22rem) / 6 - var(--tile-gap)),
+        3rem
+      )
+    );
+  }
+
+  .key {
+    height: 2.75rem;
+    min-width: 1.95rem;
+    padding: 0 0.35rem;
+    font-size: 0.78rem;
+  }
+
+  .key.wide {
+    min-width: 3.15rem;
+    font-size: 0.64rem;
+  }
 }

@@ -15,19 +15,23 @@ export function CardHeader({
   right?: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between mb-4 gap-4">
-      <div>
+    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="min-w-0">
         <h3
-          className="font-display text-xl font-bold tracking-[-0.015em]"
+          className="font-display text-lg sm:text-xl font-bold tracking-[-0.015em] break-words"
           style={{ fontVariationSettings: '"wdth" 88' }}
         >
           {title}
         </h3>
         {description && (
-          <p className="text-sm text-muted-foreground mt-1">{description}</p>
+          <p className="mt-1 text-xs sm:text-sm text-muted-foreground">{description}</p>
         )}
       </div>
-      {right}
+      {right ? (
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+          {right}
+        </div>
+      ) : null}
     </div>
   );
 }

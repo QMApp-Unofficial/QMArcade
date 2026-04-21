@@ -72,11 +72,11 @@ export function Layout() {
           onLogout={logout}
         />
 
-        <main className="container py-3 md:py-4 flex-1 w-full flex flex-col min-h-0 overflow-y-auto">
+        <main className="container py-2.5 md:py-4 flex-1 w-full flex flex-col min-h-0 overflow-y-auto">
           <Outlet />
         </main>
 
-        <footer className="container py-2 text-[10px] text-muted-foreground text-center">
+        <footer className="container mobile-safe-bottom py-1.5 sm:py-2 text-[9px] sm:text-[10px] text-muted-foreground text-center">
           {/* User asked for a "made for 10 friends" vibe without stating the number.
              "A small table, always set" implies a fixed, intimate group. */}
           <p>Built for the Queen Mary lot · a small table, always set.</p>
@@ -342,11 +342,11 @@ function MobileBar({
   onLogout: () => Promise<void>;
 }) {
   return (
-    <header className="lg:hidden sticky top-0 z-30 surface-glass border-b border-border">
-      <div className="container flex items-center gap-3 py-2.5">
+    <header className="lg:hidden sticky top-0 z-30 surface-glass border-b border-border mobile-safe-top">
+      <div className="container flex items-center gap-2 py-2 sm:py-2.5">
         <NavLink
           to="/"
-          className="flex items-center active:scale-[0.97] transition-transform duration-150 shrink-0"
+          className="flex items-center active:scale-[0.97] transition-transform duration-150 shrink-0 scale-[0.92] origin-left sm:scale-100"
           style={{ transitionTimingFunction: "var(--ease-out-quint)" }}
           aria-label="Home"
         >
@@ -408,7 +408,7 @@ function MobileBar({
 
       <nav
         aria-label="Primary mobile"
-        className="container overflow-x-auto pb-2 flex gap-1 no-scrollbar"
+        className="container overflow-x-auto pb-1.5 sm:pb-2 flex gap-1 no-scrollbar"
       >
         {NAV.map(({ to, label, icon: Icon }) => (
           <NavLink
@@ -417,7 +417,7 @@ function MobileBar({
             end={to === "/"}
             className={({ isActive }) =>
               cn(
-                "btn-ghost text-xs gap-1 px-2.5 py-1.5 shrink-0",
+                "btn-ghost text-[11px] sm:text-xs gap-1 px-2 py-1.5 sm:px-2.5 shrink-0",
                 isActive && "font-semibold bg-foreground/6 border border-border",
               )
             }
@@ -431,7 +431,7 @@ function MobileBar({
             to="/admin"
             className={({ isActive }) =>
               cn(
-                "btn-ghost text-xs gap-1 px-2.5 py-1.5 shrink-0",
+                "btn-ghost text-[11px] sm:text-xs gap-1 px-2 py-1.5 sm:px-2.5 shrink-0",
                 isActive && "font-semibold bg-foreground/6 border border-border",
               )
             }

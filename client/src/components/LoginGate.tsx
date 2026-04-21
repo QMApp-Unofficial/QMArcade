@@ -88,7 +88,7 @@ export function LoginGate({ children }: { children: React.ReactNode }) {
           <div className="text-xs text-muted-foreground text-center">
             or (local dev only)
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <Input
               aria-label="Discord ID"
               value={devId}
