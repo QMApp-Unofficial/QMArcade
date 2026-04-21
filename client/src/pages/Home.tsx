@@ -245,7 +245,10 @@ function CircularPicker({
   }
 
   return (
-    <div className="relative mx-auto w-full h-full">
+    <div
+      className="relative mx-auto w-full h-full"
+      onMouseLeave={() => onHover(null)}
+    >
       {/* Decorative orbit rings, with the outermost ring drifting between
          navy and amber to give the idle state a subtle life without
          distracting the user. */}
@@ -402,7 +405,6 @@ function OrbitTile({
     <Link
       to={tile.to}
       onMouseEnter={onEnter}
-      onMouseLeave={onLeave}
       onFocus={onEnter}
       onBlur={onLeave}
       onTouchStart={onEnter}
