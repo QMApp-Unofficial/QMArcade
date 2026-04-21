@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { isInsideDiscord } from "@/lib/discord";
 
 const MINIMIZED_ACTIVITY_IMAGE = "/activity-minimized.png";
 const PREVIEW_ELECTRONS = [
@@ -19,19 +20,22 @@ function isCompactPreviewViewport() {
 /**
  * Activity preview overlay.
  *
- * User request: use the supplied home-screen screenshot as the displayed image
- * when the activity is minimised.
+ * Hidden activities keep the supplied screenshot treatment, but Discord's
+ * compact mobile pop-up now gets a simplified atom-only preview so it doesn't
+ * feel like a squashed screenshot.
  *
- * We listen for `visibilitychange` and mount the screenshot overlay while the
- * tab is hidden. Discord's pop-up/minimised activity can also keep the page
- * visible while shrinking the viewport, so compact viewports show the same
- * static image instead of a tiny squashed copy of the live app.
+ * We only enable the compact-preview path while running inside Discord, so a
+ * regular browser window being resized on desktop won't suddenly replace the
+ * app with the mobile preview overlay.
  */
 export function MinimizeOverlay() {
+  const insideDiscord = isInsideDiscord();
   const [hidden, setHidden] = useState(
     typeof document !== "undefined" ? document.visibilityState === "hidden" : false,
   );
-  const [compactPreview, setCompactPreview] = useState(isCompactPreviewViewport);
+  const [compactPreview, setCompactPreview] = useState(
+    insideDiscord && isCompactPreviewViewport(),
+  );
 
   useEffect(() => {
     const image = new Image();
@@ -41,7 +45,7 @@ export function MinimizeOverlay() {
       setHidden(document.visibilityState === "hidden");
     }
     function onResize() {
-      setCompactPreview(isCompactPreviewViewport());
+      setCompactPreview(insideDiscord && isCompactPreviewViewport());
     }
 
     document.addEventListener("visibilitychange", onVis);
@@ -54,10 +58,10 @@ export function MinimizeOverlay() {
       window.removeEventListener("resize", onResize);
       window.visualViewport?.removeEventListener("resize", onResize);
     };
-  }, []);
+  }, [insideDiscord]);
 
-  const showingPreview = hidden || compactPreview;
-  const mode = compactPreview ? "atom" : "image";
+  const mode = compactPreview ? "atom" : hidden ? "image" : null;
+  const showingPreview = mode !== null;
 
   return (
     <AnimatePresence>
