@@ -89,7 +89,7 @@ const DUST = [
  * 100dvh so the whole thing fits the Discord iframe without ever introducing
  * scroll, and all five orbital tiles stay inside the viewport.
  */
-const PICKER_SIZE = "min(96vw, max(19rem, 100dvh - 20.5rem), 35rem)";
+const PICKER_SIZE = "min(96vw, max(19rem, 100dvh - 20.5rem), 33rem)";
 const RADIUS = `calc(${PICKER_SIZE} * 0.395)`;
 
 export function Home() {
@@ -299,7 +299,7 @@ function CircularPicker({
         })}
       </div>
 
-      <div className="absolute left-1/2 top-1/2 z-10 grid h-40 w-40 min-[390px]:h-44 min-[390px]:w-44 md:h-52 md:w-52 -translate-x-1/2 -translate-y-1/2 place-items-center">
+      <div className="absolute left-1/2 top-1/2 z-10 grid h-40 w-40 min-[390px]:h-44 min-[390px]:w-44 md:h-48 md:w-48 -translate-x-1/2 -translate-y-1/2 place-items-center">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={active?.to || "idle"}
@@ -312,15 +312,15 @@ function CircularPicker({
             {active ? (
               <div className="flex flex-col items-center gap-1.5 pointer-events-none">
                 <div
-                  className="h-11 w-11 min-[390px]:h-12 min-[390px]:w-12 md:h-[3.75rem] md:w-[3.75rem] rounded-xl grid place-items-center"
+                  className="h-11 w-11 min-[390px]:h-12 min-[390px]:w-12 md:h-[3.25rem] md:w-[3.25rem] rounded-xl grid place-items-center"
                   style={{
                     background: `hsl(${active.hue} / 0.2)`,
                     color: `hsl(${active.hue})`,
                   }}
                 >
-                  <active.icon className="h-5 w-5 min-[390px]:h-6 min-[390px]:w-6 md:h-7 md:w-7" />
+                  <active.icon className="h-5 w-5 min-[390px]:h-6 min-[390px]:w-6 md:h-6 md:w-6" />
                 </div>
-                <span className="font-display font-semibold text-[0.95rem] min-[390px]:text-[1.05rem] md:text-xl">
+                <span className="font-display font-semibold text-[0.95rem] min-[390px]:text-[1.05rem] md:text-lg">
                   {active.title}
                 </span>
                 <span className="text-[10px] sm:text-xs text-muted-foreground px-2 max-w-[12rem] sm:max-w-[13.5rem] leading-relaxed">
@@ -332,7 +332,7 @@ function CircularPicker({
                 type="button"
                 onClick={handleNucleusClick}
                 aria-label="Charge the nucleus"
-                className="relative h-28 w-28 min-[390px]:h-32 min-[390px]:w-32 md:h-36 md:w-36 grid place-items-center cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-full"
+                className="relative h-28 w-28 min-[390px]:h-32 min-[390px]:w-32 md:h-[8.5rem] md:w-[8.5rem] grid place-items-center cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-full"
               >
                 <span
                   aria-hidden="true"
@@ -349,7 +349,7 @@ function CircularPicker({
                   alt=""
                   aria-hidden="true"
                   className={cn(
-                    "relative h-[5rem] w-[5rem] min-[390px]:h-[5.85rem] min-[390px]:w-[5.85rem] md:h-[6.6rem] md:w-[6.6rem] rounded-full shadow-lg shadow-primary/25 animate-nucleus-breathe",
+                    "relative h-[5rem] w-[5rem] min-[390px]:h-[5.85rem] min-[390px]:w-[5.85rem] md:h-[5.4rem] md:w-[5.4rem] rounded-full shadow-lg shadow-primary/25 animate-nucleus-breathe",
                     zapKey > 0 && "animate-nucleus-zap",
                   )}
                 />
@@ -407,7 +407,7 @@ function OrbitTile({
       onBlur={onLeave}
       onTouchStart={onEnter}
       className={cn(
-        "group relative block rounded-2xl surface p-3.5 min-[390px]:p-[1.125rem] active:scale-[0.97]",
+        "group relative block rounded-2xl surface p-3.5 min-[390px]:p-[1.125rem] md:p-4 active:scale-[0.97]",
         isHovered && "scale-[1.08]",
         isDimmed && "opacity-35 scale-[0.94]",
       )}
@@ -423,13 +423,13 @@ function OrbitTile({
       }}
     >
       <div
-        className="h-11 w-11 min-[390px]:h-12 min-[390px]:w-12 md:h-[3.75rem] md:w-[3.75rem] rounded-xl grid place-items-center"
+        className="h-11 w-11 min-[390px]:h-12 min-[390px]:w-12 md:h-[3.25rem] md:w-[3.25rem] rounded-xl grid place-items-center"
         style={{
           background: `hsl(${tile.hue} / 0.14)`,
           color: `hsl(${tile.hue})`,
         }}
       >
-        <Icon className="h-5 w-5 min-[390px]:h-6 min-[390px]:w-6 md:h-7 md:w-7" strokeWidth={2.2} />
+        <Icon className="h-5 w-5 min-[390px]:h-6 min-[390px]:w-6 md:h-6 md:w-6" strokeWidth={2.2} />
       </div>
       <motion.div
         initial={false}
