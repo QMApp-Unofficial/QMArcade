@@ -9,20 +9,26 @@ const PREVIEW_ELECTRONS = [
   { angle: 272, distance: "5rem", color: "hsl(var(--glow-warm))" },
 ];
 
-function isCompactPreviewViewport() {
-  if (typeof window === "undefined") return false;
+type PreviewMode = "mobile" | "desktop";
+
+function getVisiblePreviewMode(): PreviewMode | null {
+  if (typeof window === "undefined") return null;
   const viewport = window.visualViewport;
   const width = viewport?.width ?? window.innerWidth;
   const height = viewport?.height ?? window.innerHeight;
-  return height <= 420 && width <= 760;
+  const finePointer = window.matchMedia?.("(pointer: fine)").matches ?? false;
+
+  if (height <= 420 && width <= 760) return "mobile";
+  if (finePointer && height <= 620 && width <= 980) return "desktop";
+  return null;
 }
 
 /**
  * Activity preview overlay.
  *
- * Hidden activities keep the supplied screenshot treatment, but Discord's
- * compact mobile pop-up now gets a simplified atom-only preview so it doesn't
- * feel like a squashed screenshot.
+ * Hidden activities keep the supplied screenshot treatment, while Discord's
+ * visible mobile/desktop pop-up previews get a simplified atom-only version
+ * so they don't feel like a squashed screenshot.
  *
  * We only enable the compact-preview path while running inside Discord, so a
  * regular browser window being resized on desktop won't suddenly replace the
@@ -33,8 +39,8 @@ export function MinimizeOverlay() {
   const [hidden, setHidden] = useState(
     typeof document !== "undefined" ? document.visibilityState === "hidden" : false,
   );
-  const [compactPreview, setCompactPreview] = useState(
-    insideDiscord && isCompactPreviewViewport(),
+  const [previewMode, setPreviewMode] = useState<PreviewMode | null>(
+    insideDiscord ? getVisiblePreviewMode() : null,
   );
 
   useEffect(() => {
@@ -45,7 +51,7 @@ export function MinimizeOverlay() {
       setHidden(document.visibilityState === "hidden");
     }
     function onResize() {
-      setCompactPreview(insideDiscord && isCompactPreviewViewport());
+      setPreviewMode(insideDiscord ? getVisiblePreviewMode() : null);
     }
 
     document.addEventListener("visibilitychange", onVis);
@@ -60,7 +66,7 @@ export function MinimizeOverlay() {
     };
   }, [insideDiscord]);
 
-  const mode = compactPreview ? "atom" : hidden ? "image" : null;
+  const mode = hidden ? "image" : previewMode ? "atom" : null;
   const showingPreview = mode !== null;
 
   return (
@@ -76,7 +82,7 @@ export function MinimizeOverlay() {
           aria-hidden="true"
         >
           {mode === "atom" ? (
-            <CompactAtomPreview />
+            <CompactAtomPreview mode={previewMode ?? "mobile"} />
           ) : (
             <img
               src={MINIMIZED_ACTIVITY_IMAGE}
@@ -91,7 +97,9 @@ export function MinimizeOverlay() {
   );
 }
 
-function CompactAtomPreview() {
+function CompactAtomPreview({ mode }: { mode: PreviewMode }) {
+  const desktop = mode === "desktop";
+
   return (
     <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-background">
       <div
@@ -108,7 +116,7 @@ function CompactAtomPreview() {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.96 }}
         transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-        className="relative h-44 w-44"
+        className={desktop ? "relative h-52 w-52" : "relative h-44 w-44"}
       >
         <div
           aria-hidden="true"
@@ -138,7 +146,13 @@ function CompactAtomPreview() {
           ))}
         </div>
 
-        <div className="absolute left-1/2 top-1/2 grid h-32 w-32 -translate-x-1/2 -translate-y-1/2 place-items-center">
+        <div
+          className={
+            desktop
+              ? "absolute left-1/2 top-1/2 grid h-36 w-36 -translate-x-1/2 -translate-y-1/2 place-items-center"
+              : "absolute left-1/2 top-1/2 grid h-32 w-32 -translate-x-1/2 -translate-y-1/2 place-items-center"
+          }
+        >
           <span
             aria-hidden="true"
             className="absolute inset-0 rounded-full bg-accent/15 blur-xl animate-halo-pulse"
@@ -152,7 +166,11 @@ function CompactAtomPreview() {
             src="/qmul-logo.png"
             alt=""
             aria-hidden="true"
-            className="relative h-24 w-24 rounded-full shadow-lg shadow-primary/25 animate-nucleus-breathe"
+            className={
+              desktop
+                ? "relative h-28 w-28 rounded-full shadow-lg shadow-primary/25 animate-nucleus-breathe"
+                : "relative h-24 w-24 rounded-full shadow-lg shadow-primary/25 animate-nucleus-breathe"
+            }
             draggable={false}
           />
         </div>
