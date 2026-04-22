@@ -39,6 +39,9 @@ export function MinimizeOverlay() {
   const [hidden, setHidden] = useState(
     typeof document !== "undefined" ? document.visibilityState === "hidden" : false,
   );
+  const [focused, setFocused] = useState(
+    typeof document !== "undefined" ? document.hasFocus() : true,
+  );
   const [previewMode, setPreviewMode] = useState<PreviewMode | null>(
     insideDiscord ? getVisiblePreviewMode() : null,
   );
@@ -49,24 +52,37 @@ export function MinimizeOverlay() {
 
     function onVis() {
       setHidden(document.visibilityState === "hidden");
+      setFocused(document.hasFocus());
     }
     function onResize() {
       setPreviewMode(insideDiscord ? getVisiblePreviewMode() : null);
     }
+    function onFocus() {
+      setFocused(true);
+    }
+    function onBlur() {
+      setFocused(false);
+    }
 
     document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("blur", onBlur);
     window.addEventListener("resize", onResize);
     window.visualViewport?.addEventListener("resize", onResize);
     onResize();
 
     return () => {
       document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("blur", onBlur);
       window.removeEventListener("resize", onResize);
       window.visualViewport?.removeEventListener("resize", onResize);
     };
   }, [insideDiscord]);
 
-  const mode = hidden ? "image" : previewMode ? "atom" : null;
+  const activeAtomMode =
+    previewMode ?? (insideDiscord && !hidden && !focused ? "desktop" : null);
+  const mode = hidden ? "image" : activeAtomMode ? "atom" : null;
   const showingPreview = mode !== null;
 
   return (
@@ -82,7 +98,7 @@ export function MinimizeOverlay() {
           aria-hidden="true"
         >
           {mode === "atom" ? (
-            <CompactAtomPreview mode={previewMode ?? "mobile"} />
+            <CompactAtomPreview mode={activeAtomMode ?? "mobile"} />
           ) : (
             <img
               src={MINIMIZED_ACTIVITY_IMAGE}
